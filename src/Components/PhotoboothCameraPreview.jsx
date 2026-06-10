@@ -1105,16 +1105,32 @@ const PhotoboothCameraPreview = forwardRef(function PhotoboothCameraPreview(
   const waitForVideoMetadata = (video) => {
     return new Promise((resolve) => {
       if (video.videoWidth && video.videoHeight) {
-        resolve();
+        resolve(true);
         return;
       }
 
-      const handleLoadedMetadata = () => {
+      let timeoutId = null;
+
+      const cleanup = () => {
+        if (timeoutId) window.clearTimeout(timeoutId);
         video.removeEventListener('loadedmetadata', handleLoadedMetadata);
-        resolve();
+        video.removeEventListener('canplay', handleLoadedMetadata);
+        video.removeEventListener('playing', handleLoadedMetadata);
       };
 
+      const handleLoadedMetadata = () => {
+        cleanup();
+        resolve(true);
+      };
+
+      timeoutId = window.setTimeout(() => {
+        cleanup();
+        resolve(false);
+      }, 1800);
+
       video.addEventListener('loadedmetadata', handleLoadedMetadata, { once: true });
+      video.addEventListener('canplay', handleLoadedMetadata, { once: true });
+      video.addEventListener('playing', handleLoadedMetadata, { once: true });
     });
   };
 
@@ -1279,13 +1295,18 @@ const PhotoboothCameraPreview = forwardRef(function PhotoboothCameraPreview(
       if (timestamp - lastFrameTimeRef.current >= frameInterval) {
         lastFrameTimeRef.current = timestamp;
 
-        drawMirroredFrame(
+        const didDrawFrame = drawMirroredFrame(
           videoRef.current,
           previewCanvasRef.current,
           previewSize.width,
           previewSize.height,
           false
         );
+
+        if (didDrawFrame && isMountedRef.current) {
+          setCameraError('');
+          setIsCameraReady(true);
+        }
       }
 
       animationRef.current = requestAnimationFrame(renderPreview);
@@ -1307,6 +1328,8 @@ const PhotoboothCameraPreview = forwardRef(function PhotoboothCameraPreview(
     selectedDitherColor,
     selectedOldFilmColor,
     filterEffectSettings,
+    setCameraError,
+    setIsCameraReady,
   ]);
 
   return (
@@ -1317,12 +1340,16 @@ const PhotoboothCameraPreview = forwardRef(function PhotoboothCameraPreview(
         playsInline
         muted
         webkit-playsinline="true"
-        className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-0"
+        className={`pointer-events-none absolute inset-0 h-full w-full scale-x-[-1] object-cover ${
+          isCameraOn ? 'opacity-100' : 'opacity-0'
+        }`}
       />
 
       <canvas
         ref={previewCanvasRef}
-        className={`relative z-[1] h-full w-full object-cover ${isCameraOn ? 'block' : 'hidden'}`}
+        className={`relative z-[1] h-full w-full object-cover ${
+          isCameraOn && isCameraReady ? 'block' : 'hidden'
+        }`}
       />
 
       <canvas ref={captureCanvasRef} className="hidden" />
@@ -1362,10 +1389,10 @@ const PhotoboothCameraPreview = forwardRef(function PhotoboothCameraPreview(
         </div>
       )}
 
-      {cameraError && !isCameraOn && !isStartingCamera && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center text-[#FDF9F2]">
+      {cameraError && !isStartingCamera && (
+        <div className="absolute inset-0 z-[70] flex flex-col items-center justify-center bg-[#05102D]/86 px-6 text-center text-[#FDF9F2]">
           <p className="mb-2 text-xl font-black">Camera unavailable</p>
-          <p className="mb-5 text-sm opacity-80">{cameraError}</p>
+          <p className="mb-5 text-sm opacity-85">{cameraError}</p>
 
           <button
             type="button"
@@ -1403,7 +1430,7 @@ const PhotoboothCameraPreview = forwardRef(function PhotoboothCameraPreview(
         </div>
       )}
 
-      {isCameraOn && !isCameraReady && !isStartingCamera && (
+      {isCameraOn && !isCameraReady && !isStartingCamera && !cameraError && (
         <div className="absolute inset-0 flex items-center justify-center bg-[#05102D] text-[#FDF9F2]">
           <p className="text-lg font-black md:animate-cartoon-bob">Starting camera...</p>
         </div>
