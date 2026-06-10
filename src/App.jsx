@@ -1948,14 +1948,9 @@ function App() {
 
       <style>{`
         @media (max-width: 767px), (hover: none), (pointer: coarse) {
-          .photo2y-scroll-main * {
-            animation-duration: 0.001ms !important;
-            animation-iteration-count: 1 !important;
-            scroll-behavior: auto !important;
-          }
-
           .photo2y-scroll-main {
             -webkit-overflow-scrolling: touch;
+            scroll-behavior: auto !important;
           }
         }
       `}</style>
