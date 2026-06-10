@@ -1,0 +1,741 @@
+@import "tailwindcss";
+
+@font-face {
+  font-family: 'Genoir Black Expanded';
+  src: url('./assets/Genoir-BlackExpanded.otf') format('opentype');
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Photo2y Serif';
+  src: local('Georgia');
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Photo2y Rounded';
+  src: local('Arial Rounded MT Bold'), local('Arial');
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Photo2y Bold';
+  src: local('Impact'), local('Arial Black');
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Photo2y Mono';
+  src: local('Courier New'), local('Courier');
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Photo2y Cute';
+  src: local('Comic Sans MS'), local('Comic Sans'), local('Arial');
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-photo2y-display: 'Genoir Black Expanded', Helvetica, Arial, sans-serif;
+  --font-photo2y-serif: 'Photo2y Serif', Georgia, 'Times New Roman', serif;
+  --font-photo2y-rounded: 'Photo2y Rounded', 'Arial Rounded MT Bold', Arial, sans-serif;
+  --font-photo2y-bold: 'Photo2y Bold', Impact, 'Arial Black', sans-serif;
+  --font-photo2y-mono: 'Photo2y Mono', 'Courier New', Courier, monospace;
+  --font-photo2y-cute: 'Photo2y Cute', 'Comic Sans MS', 'Comic Sans', cursive;
+  --font-photo2y-body: Helvetica, Arial, sans-serif;
+
+  font-family: var(--font-photo2y-body);
+  color: #f7f0e8;
+  background-color: #1f3a3d;
+}
+
+html,
+body,
+#root {
+  width: 100%;
+  height: 100%;
+  min-height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  min-height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+body {
+  min-height: 100dvh;
+  font-family: var(--font-photo2y-body);
+  background-color: #1f3a3d;
+  cursor: url('./assets/cursor.svg') 0 0, auto;
+  overflow-x: hidden;
+  overflow-y: hidden;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+#root {
+  height: 100dvh;
+  min-height: 100dvh;
+  overflow-x: hidden;
+  overflow-y: hidden;
+}
+
+.photo2y-scroll-main {
+  height: 100%;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Big headers / display text */
+h1,
+h2,
+h3,
+.font-serif,
+button.font-serif,
+.font-photo2y-display,
+.font-genoir {
+  font-family: var(--font-photo2y-display) !important;
+  letter-spacing: -0.03em;
+}
+
+/* Sub text / regular UI text */
+p,
+span,
+button,
+input,
+textarea,
+label,
+a {
+  font-family: var(--font-photo2y-body);
+}
+
+.font-photo2y-serif {
+  font-family: var(--font-photo2y-serif) !important;
+}
+
+.font-photo2y-rounded {
+  font-family: var(--font-photo2y-rounded) !important;
+}
+
+.font-photo2y-bold {
+  font-family: var(--font-photo2y-bold) !important;
+}
+
+.font-photo2y-mono {
+  font-family: var(--font-photo2y-mono) !important;
+}
+
+.font-photo2y-cute {
+  font-family: var(--font-photo2y-cute) !important;
+}
+
+/* Keep display-font buttons tight */
+button.font-serif {
+  letter-spacing: -0.03em;
+}
+
+button,
+a,
+input,
+textarea,
+select,
+label,
+[role="button"] {
+  cursor: url('./assets/cursor.svg') 0 0, pointer;
+}
+
+* {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+input,
+textarea {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+button,
+a,
+[role="button"],
+[aria-label],
+[title] {
+  position: relative;
+}
+
+button[aria-label],
+a[aria-label],
+[role="button"][aria-label],
+button[title],
+a[title],
+[role="button"][title] {
+  overflow: visible !important;
+}
+
+button[aria-label]::after,
+a[aria-label]::after,
+[role="button"][aria-label]::after,
+button[title]::after,
+a[title]::after,
+[role="button"][title]::after {
+  content: attr(aria-label);
+  pointer-events: none;
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 12px);
+  z-index: 2147483646;
+  max-width: min(280px, calc(100vw - 24px));
+  min-width: max-content;
+  padding: 7px 10px;
+  border: 2px solid #05102D;
+  border-radius: 14px;
+  background: #FDF9F2;
+  color: #05102D;
+  box-shadow: 3px 4px 0 #05102D;
+  font-family: var(--font-photo2y-body);
+  font-size: 11px;
+  font-weight: 900;
+  line-height: 1.1;
+  letter-spacing: 0.04em;
+  text-align: center;
+  text-transform: uppercase;
+  white-space: normal;
+  overflow-wrap: break-word;
+  opacity: 0;
+  transform: translateX(-50%) translateY(5px) rotate(-1deg) scale(0.96);
+  transition:
+    opacity 160ms ease-out,
+    transform 160ms ease-out;
+}
+
+button[title]::after,
+a[title]::after,
+[role="button"][title]::after {
+  content: attr(title);
+}
+
+button[aria-label]::before,
+a[aria-label]::before,
+[role="button"][aria-label]::before,
+button[title]::before,
+a[title]::before,
+[role="button"][title]::before {
+  content: '';
+  pointer-events: none;
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 5px);
+  z-index: 2147483647;
+  width: 14px;
+  height: 14px;
+  border-right: 2px solid #05102D;
+  border-bottom: 2px solid #05102D;
+  border-bottom-right-radius: 3px;
+  background: linear-gradient(135deg, transparent 0 49%, #FDF9F2 50% 100%);
+  box-shadow: 2px 2px 0 #05102D;
+  opacity: 0;
+  transform: translateX(-50%) translateY(5px) rotate(45deg) scale(0.8);
+  transform-origin: center;
+  transition:
+    opacity 160ms ease-out,
+    transform 160ms ease-out;
+}
+
+button[aria-label]:hover::after,
+button[aria-label]:focus-visible::after,
+a[aria-label]:hover::after,
+a[aria-label]:focus-visible::after,
+[role="button"][aria-label]:hover::after,
+[role="button"][aria-label]:focus-visible::after,
+button[title]:hover::after,
+button[title]:focus-visible::after,
+a[title]:hover::after,
+a[title]:focus-visible::after,
+[role="button"][title]:hover::after,
+[role="button"][title]:focus-visible::after,
+button[aria-label]:hover::before,
+button[aria-label]:focus-visible::before,
+a[aria-label]:hover::before,
+a[aria-label]:focus-visible::before,
+[role="button"][aria-label]:hover::before,
+[role="button"][aria-label]:focus-visible::before,
+button[title]:hover::before,
+button[title]:focus-visible::before,
+a[title]:hover::before,
+a[title]:focus-visible::before,
+[role="button"][title]:hover::before,
+[role="button"][title]:focus-visible::before {
+  opacity: 1;
+}
+
+button[aria-label]:hover::after,
+button[aria-label]:focus-visible::after,
+a[aria-label]:hover::after,
+a[aria-label]:focus-visible::after,
+[role="button"][aria-label]:hover::after,
+[role="button"][aria-label]:focus-visible::after,
+button[title]:hover::after,
+button[title]:focus-visible::after,
+a[title]:hover::after,
+a[title]:focus-visible::after,
+[role="button"][title]:hover::after,
+[role="button"][title]:focus-visible::after {
+  transform: translateX(-50%) translateY(0) rotate(0deg) scale(1);
+}
+
+button[aria-label]:hover::before,
+button[aria-label]:focus-visible::before,
+a[aria-label]:hover::before,
+a[aria-label]:focus-visible::before,
+[role="button"][aria-label]:hover::before,
+[role="button"][aria-label]:focus-visible::before,
+button[title]:hover::before,
+button[title]:focus-visible::before,
+a[title]:hover::before,
+a[title]:focus-visible::before,
+[role="button"][title]:hover::before,
+[role="button"][title]:focus-visible::before {
+  transform: translateX(-50%) translateY(-1px) rotate(45deg) scale(1);
+}
+
+/* Hide selected tooltips */
+button[aria-label="Close"]::before,
+button[aria-label="Close"]::after,
+button[aria-label="Close customization panel"]::before,
+button[aria-label="Close customization panel"]::after,
+button[title="Close"]::before,
+button[title="Close"]::after,
+button[aria-label*="close" i]::before,
+button[aria-label*="close" i]::after,
+button[title*="close" i]::before,
+button[title*="close" i]::after,
+button[aria-label="Switch to light mode"]::before,
+button[aria-label="Switch to light mode"]::after,
+button[aria-label="Switch to dark mode"]::before,
+button[aria-label="Switch to dark mode"]::after,
+button[title="Light mode"]::before,
+button[title="Light mode"]::after,
+button[title="Dark mode"]::before,
+button[title="Dark mode"]::after,
+button[aria-label*="rename" i]::before,
+button[aria-label*="rename" i]::after,
+button[title*="rename" i]::before,
+button[title*="rename" i]::after,
+button[aria-label*="edit" i]::before,
+button[aria-label*="edit" i]::after,
+button[title*="edit" i]::before,
+button[title*="edit" i]::after,
+button[title="Filter"]::before,
+button[title="Filter"]::after,
+button[title="Strip design"]::before,
+button[title="Strip design"]::after,
+button[title="Number of photos"]::before,
+button[title="Number of photos"]::after,
+button[aria-label="Filter"]::before,
+button[aria-label="Filter"]::after,
+button[aria-label="Strip design"]::before,
+button[aria-label="Strip design"]::after,
+button[aria-label="Number of photos"]::before,
+button[aria-label="Number of photos"]::after,
+button[title*="filter" i]::before,
+button[title*="filter" i]::after,
+button[aria-label*="filter" i]::before,
+button[aria-label*="filter" i]::after,
+button[title*="sticker" i]::before,
+button[title*="sticker" i]::after,
+button[aria-label*="sticker" i]::before,
+button[aria-label*="sticker" i]::after,
+button[title*="font" i]::before,
+button[title*="font" i]::after,
+button[aria-label*="font" i]::before,
+button[aria-label*="font" i]::after,
+button[title*="style" i]::before,
+button[title*="style" i]::after,
+button[aria-label*="style" i]::before,
+button[aria-label*="style" i]::after,
+button[title*="strip color" i]::before,
+button[title*="strip color" i]::after,
+button[aria-label*="strip color" i]::before,
+button[aria-label*="strip color" i]::after,
+button[title*="color" i]::before,
+button[title*="color" i]::after,
+button[aria-label*="color" i]::before,
+button[aria-label*="color" i]::after,
+button[title*="customize" i]::before,
+button[title*="customize" i]::after,
+button[aria-label*="customize" i]::before,
+button[aria-label*="customize" i]::after,
+button[title*="customization" i]::before,
+button[title*="customization" i]::after,
+button[aria-label*="customization" i]::before,
+button[aria-label*="customization" i]::after {
+  display: none !important;
+}
+
+.animate-customize-panel-pop button::before,
+.animate-customize-panel-pop button::after {
+  display: none !important;
+}
+
+button:disabled::before,
+button:disabled::after {
+  display: none;
+}
+
+@media (max-width: 767px), (hover: none), (pointer: coarse) {
+  button[aria-label]::before,
+  button[aria-label]::after,
+  a[aria-label]::before,
+  a[aria-label]::after,
+  [role="button"][aria-label]::before,
+  [role="button"][aria-label]::after,
+  button[title]::before,
+  button[title]::after,
+  a[title]::before,
+  a[title]::after,
+  [role="button"][title]::before,
+  [role="button"][title]::after {
+    display: none !important;
+  }
+}
+
+/* Dark mode */
+html.photo2y-dark {
+  --photo2y-dark-bg: #050505;
+  --photo2y-dark-surface: #0D0D0D;
+  --photo2y-dark-surface-soft: #151515;
+  --photo2y-dark-surface-card: #101010;
+  --photo2y-dark-text: #FDF9F2;
+  --photo2y-dark-muted: rgba(253, 249, 242, 0.68);
+  --photo2y-dark-border: rgba(253, 249, 242, 0.86);
+  --photo2y-dark-blue: #1D56CF;
+  --photo2y-dark-blue-hover: #1746A8;
+}
+
+html.photo2y-dark,
+html.photo2y-dark body,
+html.photo2y-dark #root {
+  background-color: var(--photo2y-dark-bg) !important;
+  color: var(--photo2y-dark-text) !important;
+}
+
+html.photo2y-dark .bg-\[\#FDF9F2\],
+html.photo2y-dark section.bg-\[\#FDF9F2\],
+html.photo2y-dark header.bg-\[\#FDF9F2\] {
+  background-color: var(--photo2y-dark-bg) !important;
+}
+
+html.photo2y-dark .bg-white,
+html.photo2y-dark .bg-white\/45,
+html.photo2y-dark .hover\:bg-white:hover {
+  background-color: var(--photo2y-dark-surface-soft) !important;
+}
+
+html.photo2y-dark button.bg-\[\#FDF9F2\],
+html.photo2y-dark button.hover\:bg-white:hover {
+  background-color: var(--photo2y-dark-bg) !important;
+}
+
+html.photo2y-dark .bg-\[\#05102D\],
+html.photo2y-dark .bg-\[\#05102D\]\/15,
+html.photo2y-dark .bg-\[\#05102D\]\/20,
+html.photo2y-dark .bg-\[\#05102D\]\/85,
+html.photo2y-dark .bg-\[\#05102D\]\/90 {
+  background-color: rgba(13, 13, 13, 0.94) !important;
+}
+
+html.photo2y-dark button.cursor-not-allowed.bg-\[\#05102D\]\/15,
+html.photo2y-dark button.cursor-not-allowed.bg-\[\#05102D\]\/20 {
+  background-color: transparent !important;
+}
+
+html.photo2y-dark .bg-\[\#1D56CF\],
+html.photo2y-dark .hover\:bg-\[\#1D56CF\]:hover {
+  background-color: var(--photo2y-dark-blue) !important;
+}
+
+html.photo2y-dark .hover\:bg-\[\#1746A8\]:hover,
+html.photo2y-dark .hover\:bg-\[\#0A1D4E\]:hover {
+  background-color: var(--photo2y-dark-blue-hover) !important;
+}
+
+html.photo2y-dark .bg-\[\#1D56CF\]\/10,
+html.photo2y-dark .bg-\[\#1D56CF\]\/20 {
+  background-color: rgba(29, 86, 207, 0.22) !important;
+}
+
+html.photo2y-dark .text-\[\#1D56CF\],
+html.photo2y-dark .group-hover\:text-\[\#1D56CF\]:hover,
+html.photo2y-dark .hover\:text-\[\#1D56CF\]:hover {
+  color: var(--photo2y-dark-blue) !important;
+}
+
+html.photo2y-dark .text-\[\#05102D\] {
+  color: var(--photo2y-dark-text) !important;
+}
+
+html.photo2y-dark .text-\[\#05102D\]\/45,
+html.photo2y-dark .text-\[\#05102D\]\/50,
+html.photo2y-dark .text-\[\#05102D\]\/55,
+html.photo2y-dark .text-\[\#05102D\]\/60,
+html.photo2y-dark .text-\[\#05102D\]\/80 {
+  color: var(--photo2y-dark-muted) !important;
+}
+
+html.photo2y-dark .text-\[\#FDF9F2\],
+html.photo2y-dark .group-hover\:text-\[\#FDF9F2\]:hover,
+html.photo2y-dark .hover\:text-\[\#FDF9F2\]:hover {
+  color: var(--photo2y-dark-text) !important;
+}
+
+html.photo2y-dark .border-\[\#05102D\],
+html.photo2y-dark .border-\[\#05102D\]\/20,
+html.photo2y-dark .border-\[\#05102D\]\/25,
+html.photo2y-dark .border-\[\#05102D\]\/30 {
+  border-color: var(--photo2y-dark-border) !important;
+}
+
+html.photo2y-dark .border-\[\#1D56CF\] {
+  border-color: var(--photo2y-dark-blue) !important;
+}
+
+html.photo2y-dark .ring-\[\#1D56CF\] {
+  --tw-ring-color: var(--photo2y-dark-blue) !important;
+}
+
+html.photo2y-dark .ring-offset-\[\#FDF9F2\] {
+  --tw-ring-offset-color: var(--photo2y-dark-bg) !important;
+}
+
+html.photo2y-dark .shadow-\[2px_3px_0_\#05102D\],
+html.photo2y-dark .shadow-\[3px_4px_0_\#05102D\],
+html.photo2y-dark .shadow-\[4px_5px_0_\#05102D\],
+html.photo2y-dark .shadow-\[5px_6px_0_\#05102D\],
+html.photo2y-dark .shadow-\[6px_7px_0_\#05102D\],
+html.photo2y-dark .shadow-\[7px_8px_0_\#05102D\],
+html.photo2y-dark .shadow-\[8px_10px_0_\#05102D\] {
+  --tw-shadow-color: rgba(253, 249, 242, 0.9) !important;
+  --tw-shadow: var(--tw-shadow-colored) !important;
+}
+
+html.photo2y-dark .shadow-\[2px_3px_0_\#1D56CF\],
+html.photo2y-dark .shadow-\[8px_10px_0_\#1D56CF\],
+html.photo2y-dark .shadow-\[0_0_0_4px_\#1D56CF\] {
+  --tw-shadow-color: var(--photo2y-dark-blue) !important;
+  --tw-shadow: var(--tw-shadow-colored) !important;
+}
+
+html.photo2y-dark input,
+html.photo2y-dark textarea,
+html.photo2y-dark select {
+  background-color: var(--photo2y-dark-surface-soft) !important;
+  color: var(--photo2y-dark-text) !important;
+  border-color: var(--photo2y-dark-border) !important;
+}
+
+html.photo2y-dark input::placeholder,
+html.photo2y-dark textarea::placeholder {
+  color: rgba(253, 249, 242, 0.46) !important;
+}
+
+html.photo2y-dark [data-photo-strip],
+html.photo2y-dark [data-photo-strip-preview] [data-photo-strip] {
+  box-shadow: 0 0 0 1px rgba(253, 249, 242, 0.2), 0 16px 38px rgba(0, 0, 0, 0.45) !important;
+}
+
+html.photo2y-dark img {
+  filter: none;
+}
+
+html.photo2y-dark button[aria-label]::after,
+html.photo2y-dark a[aria-label]::after,
+html.photo2y-dark [role="button"][aria-label]::after,
+html.photo2y-dark button[title]::after,
+html.photo2y-dark a[title]::after,
+html.photo2y-dark [role="button"][title]::after {
+  border-color: var(--photo2y-dark-border) !important;
+  background: var(--photo2y-dark-surface) !important;
+  color: var(--photo2y-dark-text) !important;
+  box-shadow: 3px 4px 0 var(--photo2y-dark-blue) !important;
+}
+
+html.photo2y-dark button[aria-label]::before,
+html.photo2y-dark a[aria-label]::before,
+html.photo2y-dark [role="button"][aria-label]::before,
+html.photo2y-dark button[title]::before,
+html.photo2y-dark a[title]::before,
+html.photo2y-dark [role="button"][title]::before {
+  border-color: var(--photo2y-dark-border) !important;
+  background: linear-gradient(
+    135deg,
+    transparent 0 49%,
+    var(--photo2y-dark-surface) 50% 100%
+  ) !important;
+  box-shadow: 2px 2px 0 var(--photo2y-dark-blue) !important;
+}
+
+/* Dark-mode count badges */
+html.photo2y-dark .photo2y-count-badge,
+html.photo2y-dark .photo2y-count-badge-active,
+html.photo2y-dark .photo2y-count-badge.group-hover\:text-\[\#1D56CF\],
+html.photo2y-dark .group:hover .photo2y-count-badge {
+  color: #FDF9F2 !important;
+}
+
+html.photo2y-dark .photo2y-count-badge-active,
+html.photo2y-dark .group:hover .photo2y-count-badge {
+  background-color: #1D56CF !important;
+}
+
+html.photo2y-dark button span.rounded-lg[class*="px-2"][class*="py-1"],
+html.photo2y-dark button:hover span.rounded-lg[class*="px-2"][class*="py-1"],
+html.photo2y-dark button:focus-visible span.rounded-lg[class*="px-2"][class*="py-1"] {
+  color: #FDF9F2 !important;
+}
+
+html.photo2y-dark button span.rounded-lg[class*="px-2"][class*="py-1"].bg-\[\#FDF9F2\],
+html.photo2y-dark button:hover span.rounded-lg[class*="px-2"][class*="py-1"] {
+  background-color: #1D56CF !important;
+}
+
+@keyframes photo2yButtonJelly {
+  0% {
+    transform: translateY(0) rotate(0deg) scale(1);
+  }
+
+  35% {
+    transform: translateY(-2px) rotate(-0.7deg) scale(1.025);
+  }
+
+  68% {
+    transform: translateY(1px) rotate(0.35deg) scale(0.992);
+  }
+
+  100% {
+    transform: translateY(0) rotate(0deg) scale(1);
+  }
+}
+
+@keyframes photo2yButtonShineSweep {
+  0% {
+    background-position: 160% 0;
+    filter: brightness(1);
+  }
+
+  45% {
+    filter: brightness(1.08);
+  }
+
+  100% {
+    background-position: -160% 0;
+    filter: brightness(1);
+  }
+}
+
+button:not(:disabled):not([aria-label*="color" i]):not(.photo2y-no-cartoon-animation) {
+  background-image:
+    linear-gradient(
+      110deg,
+      transparent 0%,
+      transparent 34%,
+      rgba(255, 255, 255, 0.36) 45%,
+      rgba(255, 255, 255, 0.18) 52%,
+      transparent 64%,
+      transparent 100%
+    );
+  background-size: 260% 100%;
+  background-position: 160% 0;
+}
+
+button:not(:disabled):not([aria-label*="color" i]):not(.photo2y-no-cartoon-animation):hover {
+  animation-name: photo2yButtonJelly, photo2yButtonShineSweep;
+  animation-duration: 460ms, 720ms;
+  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1), ease-out;
+  animation-fill-mode: both, both;
+}
+
+button:not(:disabled):not([aria-label*="color" i]):not(.photo2y-no-cartoon-animation):active {
+  transform: translateY(2px) scale(0.97) rotate(0deg) !important;
+  filter: brightness(0.96);
+}
+
+html.photo2y-dark button:not(:disabled):not([aria-label*="color" i]):not(.photo2y-no-cartoon-animation) {
+  background-image:
+    linear-gradient(
+      110deg,
+      transparent 0%,
+      transparent 34%,
+      rgba(253, 249, 242, 0.22) 45%,
+      rgba(253, 249, 242, 0.12) 52%,
+      transparent 64%,
+      transparent 100%
+    );
+}
+
+@media (prefers-reduced-motion: reduce) {
+  button:not(:disabled):not([aria-label*="color" i]):not(.photo2y-no-cartoon-animation):hover,
+  button:not(:disabled):not([aria-label*="color" i]):not(.photo2y-no-cartoon-animation):active {
+    animation: none !important;
+    transform: none !important;
+  }
+}
+
+.photo2y-sticker-button {
+  position: absolute !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  background-image: none !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  line-height: 1 !important;
+  overflow: visible !important;
+}
+
+.photo2y-sticker-button:hover,
+.photo2y-sticker-button:active,
+.photo2y-sticker-button:focus-visible {
+  background: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  filter: none !important;
+}
+
+.photo2y-sticker-button::before,
+.photo2y-sticker-button::after {
+  display: none !important;
+}
+
+html.photo2y-dark .photo2y-sticker-button,
+html.photo2y-dark .photo2y-sticker-button:hover,
+html.photo2y-dark .photo2y-sticker-button:active,
+html.photo2y-dark .photo2y-sticker-button:focus-visible {
+  background: transparent !important;
+  background-image: none !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
