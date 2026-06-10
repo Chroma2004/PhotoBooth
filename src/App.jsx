@@ -369,6 +369,7 @@ function App() {
   const [selectedDitherColor, setSelectedDitherColor] = useState(NAVY);
   const [selectedOldFilmColor, setSelectedOldFilmColor] = useState('#8B5A2B');
   const [selectedBlackWhiteShadowColor, setSelectedBlackWhiteShadowColor] = useState('yellow');
+  const [filterPreviewVersion, setFilterPreviewVersion] = useState(0);
 
   const [animatedClassicFilterId, setAnimatedClassicFilterId] = useState(null);
   const [animatedColorOption, setAnimatedColorOption] = useState(null);
@@ -393,8 +394,9 @@ function App() {
     () => ({
       ...filterEffectSettings,
       blackWhiteShadowColor: selectedBlackWhiteShadowColor,
+      previewVersion: filterPreviewVersion,
     }),
-    [selectedBlackWhiteShadowColor]
+    [filterPreviewVersion, selectedBlackWhiteShadowColor]
   );
 
   const clearTimer = useCallback((key) => {
@@ -1385,13 +1387,13 @@ function App() {
       triggerFilterBurstAnimation();
       triggerOptionTapAnimation('classicFilterTap', setAnimatedClassicFilterId, filterId, 520);
 
-      if (isMobilePerformanceMode) {
-        setSelectedFilter(filterId);
-        return;
-      }
+      setSelectedFilter(filterId);
+      setFilterPreviewVersion((currentVersion) => currentVersion + 1);
+
+      if (isMobilePerformanceMode) return;
 
       filterChangeTimeoutRef.current = setTimeout(() => {
-        setSelectedFilter(filterId);
+        setFilterPreviewVersion((currentVersion) => currentVersion + 1);
         filterChangeTimeoutRef.current = null;
       }, 180);
     },
@@ -1427,6 +1429,7 @@ function App() {
                     520
                   );
                   setSelectedClassicFilter(classicOption.id);
+                  setFilterPreviewVersion((currentVersion) => currentVersion + 1);
                 }}
                 disabled={isToolDisabled}
                 className={`
@@ -1485,6 +1488,7 @@ function App() {
                   setFilterBurstColor(colorOption.color);
                   triggerFilterBurstAnimation();
                   setSelectedBlackWhiteShadowColor(colorOption.value);
+                  setFilterPreviewVersion((currentVersion) => currentVersion + 1);
                 }}
                 disabled={isToolDisabled}
                 className={`
@@ -1528,6 +1532,7 @@ function App() {
                   setFilterBurstColor(color);
                   triggerFilterBurstAnimation();
                   setSelectedDitherColor(color);
+                  setFilterPreviewVersion((currentVersion) => currentVersion + 1);
                 }}
                 disabled={isToolDisabled}
                 className={`
@@ -1572,6 +1577,7 @@ function App() {
                   setFilterBurstColor(colorOption.value);
                   triggerFilterBurstAnimation();
                   setSelectedOldFilmColor(colorOption.value);
+                  setFilterPreviewVersion((currentVersion) => currentVersion + 1);
                 }}
                 disabled={isToolDisabled}
                 className={`
@@ -1857,7 +1863,7 @@ function App() {
                   </div>
 
                   <div
-                    className={`mx-auto flex h-[52vh] min-h-[390px] w-full max-w-[min(100%,980px)] items-center justify-center overflow-hidden rounded-[28px] bg-black transition-transform duration-300 sm:h-auto sm:min-h-0 sm:rounded-none sm:bg-transparent [&>*]:h-full [&>*]:w-full sm:[&>*]:h-auto ${
+                    className={`mx-auto flex h-[52vh] min-h-[390px] w-full max-w-[min(100%,980px)] items-center justify-center overflow-hidden rounded-[28px] bg-black transition-transform duration-300 sm:h-auto sm:min-h-0 sm:rounded-none sm:bg-transparent [&>*]:h-full [&>*]:w-full sm:[&>*]:h-auto sm:[&>*]:w-full ${
                       isStartingCamera || mobileCameraAction === 'on'
                         ? 'md:motion-safe:animate-cartoon-pop'
                         : mobileCameraAction === 'off'
@@ -1873,6 +1879,7 @@ function App() {
                       selectedClassicFilter={selectedClassicFilter}
                       selectedDitherColor={selectedDitherColor}
                       selectedOldFilmColor={selectedOldFilmColor}
+                      key={`camera-preview-${filterPreviewVersion}`}
                       filterEffectSettings={activeFilterEffectSettings}
                       isCameraOn={isCameraOn}
                       isCameraReady={isCameraReady}

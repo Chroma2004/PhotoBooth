@@ -1101,26 +1101,36 @@ const PhotoboothCameraPreview = forwardRef(function PhotoboothCameraPreview(
   const lastFrameTimeRef = useRef(0);
   const hasFilteredPreviewFrameRef = useRef(false);
   const isMountedRef = useRef(true);
+  const latestPreviewSettingsRef = useRef({
+    selectedFilter,
+    selectedClassicFilter,
+    selectedDitherColor,
+    selectedOldFilmColor,
+    filterEffectSettings,
+  });
   const isMobilePreview = useMemo(() => getIsMobileDevice(), []);
   const [hasFilteredPreviewFrame, setHasFilteredPreviewFrame] = useState(false);
 
-  const filterSettingsKey = useMemo(
-    () =>
-      JSON.stringify({
-        selectedFilter,
-        selectedClassicFilter,
-        selectedDitherColor,
-        selectedOldFilmColor,
-        filterEffectSettings,
-      }),
-    [
+  useEffect(() => {
+    latestPreviewSettingsRef.current = {
       selectedFilter,
       selectedClassicFilter,
       selectedDitherColor,
       selectedOldFilmColor,
       filterEffectSettings,
-    ]
-  );
+    };
+
+    hasFilteredPreviewFrameRef.current = false;
+    setHasFilteredPreviewFrame(false);
+    lastFrameTimeRef.current = -getPreviewFrameInterval(selectedFilter, isMobilePreview);
+  }, [
+    selectedFilter,
+    selectedClassicFilter,
+    selectedDitherColor,
+    selectedOldFilmColor,
+    filterEffectSettings,
+    isMobilePreview,
+  ]);
 
   const waitForVideoMetadata = (video) => {
     return new Promise((resolve) => {
@@ -1201,15 +1211,17 @@ const PhotoboothCameraPreview = forwardRef(function PhotoboothCameraPreview(
     );
     context.restore();
 
+    const activeSettings = latestPreviewSettingsRef.current;
+
     applyCanvasFilter(
       context,
       outputWidth,
       outputHeight,
-      selectedFilter,
-      selectedClassicFilter,
-      selectedDitherColor,
-      selectedOldFilmColor,
-      filterEffectSettings
+      activeSettings.selectedFilter,
+      activeSettings.selectedClassicFilter,
+      activeSettings.selectedDitherColor,
+      activeSettings.selectedOldFilmColor,
+      activeSettings.filterEffectSettings
     );
 
     return shouldReturnDataUrl ? canvas.toDataURL('image/png') : true;
@@ -1312,13 +1324,12 @@ const PhotoboothCameraPreview = forwardRef(function PhotoboothCameraPreview(
     }
 
     const previewSize = getPreviewSize(isMobilePreview);
-    const frameInterval = getPreviewFrameInterval(selectedFilter, isMobilePreview);
-    lastFrameTimeRef.current = -frameInterval;
-    hasFilteredPreviewFrameRef.current = false;
-    setHasFilteredPreviewFrame(false);
 
     const renderPreview = (timestamp = performance.now()) => {
       if (!videoRef.current || !previewCanvasRef.current || !isCameraOn || !isCameraReady) return;
+
+      const activeFilter = latestPreviewSettingsRef.current.selectedFilter;
+      const frameInterval = getPreviewFrameInterval(activeFilter, isMobilePreview);
 
       if (timestamp - lastFrameTimeRef.current >= frameInterval) {
         lastFrameTimeRef.current = timestamp;
@@ -1337,9 +1348,6 @@ const PhotoboothCameraPreview = forwardRef(function PhotoboothCameraPreview(
               hasFilteredPreviewFrameRef.current = true;
               setHasFilteredPreviewFrame(true);
             }
-
-            setCameraError('');
-            setIsCameraReady(true);
           }
         } catch {
           if (isMountedRef.current && !hasFilteredPreviewFrameRef.current) {
@@ -1358,18 +1366,7 @@ const PhotoboothCameraPreview = forwardRef(function PhotoboothCameraPreview(
       animationRef.current = null;
       lastFrameTimeRef.current = 0;
     };
-  }, [
-    isCameraOn,
-    isCameraReady,
-    isMobilePreview,
-    selectedFilter,
-    selectedClassicFilter,
-    selectedDitherColor,
-    selectedOldFilmColor,
-    filterSettingsKey,
-    setCameraError,
-    setIsCameraReady,
-  ]);
+  }, [isCameraOn, isCameraReady, isMobilePreview]);
 
   return (
     <div className="relative flex aspect-[16/9] max-h-[72vh] w-full items-center justify-center overflow-hidden rounded-[34px] border-2 border-[#05102D] bg-[#05102D] [transform:translateZ(0)]">
@@ -1386,10 +1383,14 @@ const PhotoboothCameraPreview = forwardRef(function PhotoboothCameraPreview(
 
       <canvas
         ref={previewCanvasRef}
-        className={`pointer-events-none absolute inset-0 z-[5] h-full w-full object-cover ${
-          isCameraOn && isCameraReady && hasFilteredPreviewFrame ? 'opacity-100' : 'opacity-0'
+        className={`pointer-events-none absolute inset-0 z-[5] h-full w-full object-cover transition-opacity duration-75 ${
+          isCameraOn && isCameraReady ? 'opacity-100' : 'opacity-0'
         }`}
       />
+
+      {isCameraOn && isCameraReady && !hasFilteredPreviewFrame && (
+        <div className="pointer-events-none absolute inset-0 z-[6] bg-[#05102D]/15" />
+      )}
 
       <canvas ref={captureCanvasRef} className="hidden" />
 
