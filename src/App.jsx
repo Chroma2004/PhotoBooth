@@ -131,7 +131,15 @@ const createSafeId = () => {
   return `photo2y-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 };
 
+const isTouchCameraDevice = () => {
+  if (typeof window === 'undefined') return false;
+
+  return window.matchMedia('(hover: none), (pointer: coarse), (max-width: 768px)').matches;
+};
+
 const getSavedCameraPreference = () => {
+  if (isTouchCameraDevice()) return false;
+
   try {
     const saved = localStorage.getItem(STORAGE_KEYS.cameraPreference);
     return saved === null ? true : saved === 'on';
@@ -619,25 +627,30 @@ function App() {
         return;
       }
 
-      const isMobileCamera =
-        typeof window !== 'undefined' &&
-        window.matchMedia('(max-width: 768px), (hover: none), (pointer: coarse)').matches;
+      const isMobileCamera = isTouchCameraDevice();
 
       const cameraConstraints = [
         {
-          video: {
-            facingMode: { ideal: 'user' },
-            width: { ideal: isMobileCamera ? 640 : 1280 },
-            height: { ideal: isMobileCamera ? 480 : 960 },
-            frameRate: { ideal: isMobileCamera ? 15 : 30, max: isMobileCamera ? 20 : 30 },
-          },
+          video: isMobileCamera
+            ? {
+                facingMode: { ideal: 'user' },
+                width: { ideal: 480 },
+                height: { ideal: 640 },
+                frameRate: { ideal: 15, max: 20 },
+              }
+            : {
+                facingMode: { ideal: 'user' },
+                width: { ideal: 1280 },
+                height: { ideal: 960 },
+                frameRate: { ideal: 30, max: 30 },
+              },
           audio: false,
         },
         {
           video: {
-            facingMode: 'user',
-            width: { ideal: 640 },
-            height: { ideal: 480 },
+            facingMode: { ideal: 'user' },
+            width: { ideal: 480 },
+            height: { ideal: 640 },
           },
           audio: false,
         },
@@ -708,7 +721,7 @@ function App() {
   }, [clearAllTimers]);
 
   useEffect(() => {
-    if (currentPage === 'camera' && isCameraPreferredOn) {
+    if (currentPage === 'camera' && isCameraPreferredOn && !isTouchCameraDevice()) {
       startCamera();
       return;
     }
@@ -1688,7 +1701,7 @@ function App() {
                       onOpenCamera={() => {
                         triggerTimedAnimation('cameraToggle', setIsCameraToggleAnimating, 420);
                         triggerMobileCameraAction('on');
-                        saveCameraPreference(true);
+                        setIsCameraPreferredOn(true);
                         startCamera();
                       }}
                     />
