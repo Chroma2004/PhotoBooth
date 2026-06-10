@@ -1102,6 +1102,22 @@ const PhotoboothCameraPreview = forwardRef(function PhotoboothCameraPreview(
   const isMountedRef = useRef(true);
   const isMobilePreview = useMemo(() => getIsMobileDevice(), []);
 
+  const waitForVideoMetadata = (video) => {
+    return new Promise((resolve) => {
+      if (video.videoWidth && video.videoHeight) {
+        resolve();
+        return;
+      }
+
+      const handleLoadedMetadata = () => {
+        video.removeEventListener('loadedmetadata', handleLoadedMetadata);
+        resolve();
+      };
+
+      video.addEventListener('loadedmetadata', handleLoadedMetadata, { once: true });
+    });
+  };
+
   const drawMirroredFrame = (
     source,
     canvas,
@@ -1191,23 +1207,44 @@ const PhotoboothCameraPreview = forwardRef(function PhotoboothCameraPreview(
 
       if (!stream) {
         video.pause();
+        video.removeAttribute('src');
         video.srcObject = null;
+        video.load();
         setIsCameraReady(false);
         return;
       }
 
-      video.srcObject = stream;
+      video.muted = true;
+      video.autoplay = true;
+      video.playsInline = true;
+      video.setAttribute('muted', '');
+      video.setAttribute('autoplay', '');
+      video.setAttribute('playsinline', '');
+      video.setAttribute('webkit-playsinline', '');
+
+      if (video.srcObject !== stream) {
+        video.srcObject = stream;
+      }
 
       try {
-        await video.play();
+        await waitForVideoMetadata(video);
+
+        const playPromise = video.play();
+
+        if (playPromise !== undefined) {
+          await playPromise;
+        }
 
         if (!isMountedRef.current) return;
 
+        setCameraError('');
         setIsCameraReady(true);
       } catch {
         if (!isMountedRef.current) return;
 
-        setCameraError('Camera preview failed. Please close and reopen the camera.');
+        setCameraError(
+          'Camera preview failed. Tap Try again, or reopen this page in Safari/Chrome instead of an in-app browser.'
+        );
         setIsCameraReady(false);
       }
 
@@ -1274,11 +1311,18 @@ const PhotoboothCameraPreview = forwardRef(function PhotoboothCameraPreview(
 
   return (
     <div className="relative flex aspect-[16/9] max-h-[72vh] w-full items-center justify-center overflow-hidden rounded-[34px] border-2 border-[#05102D] bg-[#05102D]">
-      <video ref={videoRef} autoPlay playsInline muted className="hidden" />
+      <video
+        ref={videoRef}
+        autoPlay
+        playsInline
+        muted
+        webkit-playsinline="true"
+        className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-0"
+      />
 
       <canvas
         ref={previewCanvasRef}
-        className={`h-full w-full object-cover ${isCameraOn ? 'block' : 'hidden'}`}
+        className={`relative z-[1] h-full w-full object-cover ${isCameraOn ? 'block' : 'hidden'}`}
       />
 
       <canvas ref={captureCanvasRef} className="hidden" />
