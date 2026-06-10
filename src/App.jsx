@@ -605,22 +605,74 @@ function App() {
         return;
       }
 
-      const isMobileCamera =
-        typeof window !== 'undefined' && window.matchMedia('(max-width: 768px)').matches;
+      const isLocalhost =
+        typeof window !== 'undefined' &&
+        ['localhost', '127.0.0.1', '::1'].includes(window.location.hostname);
 
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          facingMode: 'user',
-          width: { ideal: isMobileCamera ? 720 : 1280 },
-          height: { ideal: isMobileCamera ? 540 : 960 },
-          frameRate: { ideal: isMobileCamera ? 20 : 30, max: isMobileCamera ? 24 : 30 },
+      const isSecureCameraContext =
+        typeof window === 'undefined' || window.isSecureContext || isLocalhost;
+
+      if (!isSecureCameraContext) {
+        setCameraError('Camera access needs HTTPS on phones. Please open the secure https:// link.');
+        setIsStartingCamera(false);
+        isStartingCameraRef.current = false;
+        return;
+      }
+
+      const isMobileCamera =
+        typeof window !== 'undefined' &&
+        window.matchMedia('(max-width: 768px), (hover: none), (pointer: coarse)').matches;
+
+      const cameraConstraints = [
+        {
+          video: {
+            facingMode: { ideal: 'user' },
+            width: { ideal: isMobileCamera ? 640 : 1280 },
+            height: { ideal: isMobileCamera ? 480 : 960 },
+            frameRate: { ideal: isMobileCamera ? 15 : 30, max: isMobileCamera ? 20 : 30 },
+          },
+          audio: false,
         },
-        audio: false,
-      });
+        {
+          video: {
+            facingMode: 'user',
+            width: { ideal: 640 },
+            height: { ideal: 480 },
+          },
+          audio: false,
+        },
+        {
+          video: {
+            facingMode: 'user',
+          },
+          audio: false,
+        },
+        {
+          video: true,
+          audio: false,
+        },
+      ];
+
+      let stream = null;
+      let lastCameraError = null;
+
+      for (const constraints of cameraConstraints) {
+        try {
+          stream = await navigator.mediaDevices.getUserMedia(constraints);
+          break;
+        } catch (error) {
+          lastCameraError = error;
+        }
+      }
+
+      if (!stream) {
+        throw lastCameraError || new Error('Camera access failed.');
+      }
 
       streamRef.current = stream;
       setCameraStream(stream);
       setIsCameraOn(true);
+      setCameraError('');
     } catch (error) {
       setIsCameraReady(false);
       setIsCameraOn(false);
@@ -630,9 +682,12 @@ function App() {
       streamRef.current = null;
 
       const messages = {
-        NotAllowedError: 'Camera permission was denied. Please allow camera access.',
+        AbortError: 'Camera start was interrupted. Please close other camera apps and try again.',
+        NotAllowedError: 'Camera permission was denied. Please allow camera access in your browser settings.',
         NotFoundError: 'No camera device was found.',
         NotReadableError: 'Your camera is already being used by another app.',
+        OverconstrainedError: 'Your phone camera does not support the requested settings. Please try again.',
+        SecurityError: 'Camera access needs HTTPS on phones. Please open the secure https:// link.',
       };
 
       setCameraError(messages[error?.name] || 'Camera access failed. Please refresh and try again.');
