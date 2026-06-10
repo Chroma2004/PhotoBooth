@@ -1404,6 +1404,200 @@ function App() {
     ]
   );
 
+  const renderFilterOptionControls = (isInsidePanel = false) => {
+    const wrapperClassName = isInsidePanel
+      ? 'mt-4 rounded-[22px] border-2 border-[#05102D] bg-white/45 p-3'
+      : 'mt-3';
+
+    if (selectedFilter === 'classic') {
+      return (
+        <div className={`${wrapperClassName} flex flex-wrap items-center justify-center gap-2`}>
+          {classicFilterOptions.map((classicOption) => {
+            const isSelected = selectedClassicFilter === classicOption.id;
+
+            return (
+              <button
+                key={classicOption.id}
+                type="button"
+                onClick={() => {
+                  triggerOptionTapAnimation(
+                    'classicFilterTap',
+                    setAnimatedClassicFilterId,
+                    classicOption.id,
+                    520
+                  );
+                  setSelectedClassicFilter(classicOption.id);
+                }}
+                disabled={isToolDisabled}
+                className={`
+                  flex h-10 w-10 items-center justify-center rounded-full border-2 border-[#05102D]
+                  text-xs font-black uppercase tracking-wider transition-all duration-200 ease-out
+                  md:hover:-translate-y-0.5 md:hover:shadow-[2px_3px_0_#05102D] active:translate-y-0 active:shadow-none
+                  ${
+                    isSelected
+                      ? classicOption.id === 'fishEye'
+                        ? 'bg-[#05102D] text-[#FDF9F2] shadow-[2px_3px_0_#05102D]'
+                        : 'bg-[#1D56CF] text-[#FDF9F2] shadow-[2px_3px_0_#05102D]'
+                      : 'bg-[#FDF9F2] text-[#05102D]'
+                  }
+                  ${
+                    animatedClassicFilterId === classicOption.id
+                      ? 'md:motion-safe:animate-cartoon-pop'
+                      : ''
+                  }
+                  ${isToolDisabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}
+                `}
+                aria-label={`Choose classic filter ${classicOption.label}`}
+                title={classicOption.label}
+              >
+                <img
+                  src={classicOption.icon}
+                  alt=""
+                  aria-hidden="true"
+                  className="h-5 w-5 object-contain"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </button>
+            );
+          })}
+        </div>
+      );
+    }
+
+    if (selectedFilter === 'blackWhite') {
+      return (
+        <div className={`${wrapperClassName} flex items-center justify-center gap-2`}>
+          {blackWhiteShadowColorOptions.map((colorOption) => {
+            const isSelected = selectedBlackWhiteShadowColor === colorOption.value;
+
+            return (
+              <button
+                key={colorOption.value}
+                type="button"
+                onClick={() => {
+                  triggerOptionTapAnimation(
+                    'colorOptionTap',
+                    setAnimatedColorOption,
+                    colorOption.value,
+                    520
+                  );
+                  setFilterBurstColor(colorOption.color);
+                  triggerFilterBurstAnimation();
+                  setSelectedBlackWhiteShadowColor(colorOption.value);
+                }}
+                disabled={isToolDisabled}
+                className={`
+                  h-8 w-8 rounded-full border-2 border-[#05102D] transition-all duration-200 ease-out
+                  md:hover:-translate-y-0.5 md:hover:scale-110 active:translate-y-0 active:scale-95
+                  ${isSelected ? 'scale-110 shadow-[0_0_0_4px_#1D56CF]' : ''}
+                  ${
+                    animatedColorOption === colorOption.value
+                      ? 'md:motion-safe:animate-cartoon-pop'
+                      : ''
+                  }
+                  ${isToolDisabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}
+                `}
+                style={{ backgroundColor: colorOption.color }}
+                aria-label={`Choose black and white shadow color ${colorOption.label}`}
+                title={colorOption.label}
+              />
+            );
+          })}
+        </div>
+      );
+    }
+
+    if (selectedFilter === 'dither') {
+      return (
+        <div className={`${wrapperClassName} flex items-center justify-center gap-2`}>
+          {ditherColorOptions.map((color) => {
+            const isSelected = selectedDitherColor === color;
+
+            return (
+              <button
+                key={color}
+                type="button"
+                onClick={() => {
+                  triggerOptionTapAnimation(
+                    'colorOptionTap',
+                    setAnimatedColorOption,
+                    color,
+                    520
+                  );
+                  setFilterBurstColor(color);
+                  triggerFilterBurstAnimation();
+                  setSelectedDitherColor(color);
+                }}
+                disabled={isToolDisabled}
+                className={`
+                  h-7 w-7 rounded-full transition-all duration-200 ease-out
+                  md:hover:scale-110 active:scale-95
+                  ${
+                    isSelected
+                      ? 'scale-110 ring-2 ring-[#05102D] ring-offset-2 ring-offset-[#FDF9F2]'
+                      : ''
+                  }
+                  ${animatedColorOption === color ? 'md:motion-safe:animate-cartoon-pop' : ''}
+                  ${isToolDisabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}
+                `}
+                style={{ backgroundColor: color }}
+                aria-label={`Choose dither color ${color}`}
+              />
+            );
+          })}
+        </div>
+      );
+    }
+
+    if (selectedFilter === 'oldFilm') {
+      return (
+        <div
+          className={`${wrapperClassName} flex flex-wrap items-center justify-center gap-2 sm:gap-3`}
+        >
+          {oldFilmColorOptions.map((colorOption) => {
+            const isSelected = selectedOldFilmColor === colorOption.value;
+
+            return (
+              <button
+                key={colorOption.value}
+                type="button"
+                onClick={() => {
+                  triggerOptionTapAnimation(
+                    'colorOptionTap',
+                    setAnimatedColorOption,
+                    colorOption.value,
+                    520
+                  );
+                  setFilterBurstColor(colorOption.value);
+                  triggerFilterBurstAnimation();
+                  setSelectedOldFilmColor(colorOption.value);
+                }}
+                disabled={isToolDisabled}
+                className={`
+                  h-8 w-8 rounded-full border-2 border-[#05102D] transition-all duration-200 ease-out
+                  md:hover:-translate-y-0.5 md:hover:scale-110 active:translate-y-0 active:scale-95
+                  ${isSelected ? 'scale-110 shadow-[0_0_0_4px_#1D56CF]' : ''}
+                  ${
+                    animatedColorOption === colorOption.value
+                      ? 'md:motion-safe:animate-cartoon-pop'
+                      : ''
+                  }
+                  ${isToolDisabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}
+                `}
+                style={{ backgroundColor: colorOption.value }}
+                aria-label={colorOption.label}
+                title={colorOption.label}
+              />
+            );
+          })}
+        </div>
+      );
+    }
+
+    return null;
+  };
+
   const renderToolPanel = () => {
     if (!activePanel) return null;
 
@@ -1415,7 +1609,7 @@ function App() {
           : 'Filter';
 
     return (
-      <div className="fixed inset-x-3 bottom-20 z-[80] max-h-[62vh] overflow-y-auto rounded-[26px] border-2 border-[#05102D] bg-[#FDF9F2] p-3 text-[#05102D] shadow-[4px_5px_0_#05102D] sm:inset-x-auto sm:left-[5.8rem] sm:top-1/2 sm:bottom-auto sm:w-[360px] sm:max-w-[calc(100vw-7rem)] sm:-translate-y-1/2 sm:overflow-visible sm:rounded-[30px] sm:p-4 sm:shadow-[6px_7px_0_#05102D] md:left-[6.4rem] md:motion-safe:animate-cartoon-panel">
+      <div className="fixed inset-x-3 bottom-20 z-[80] max-h-[70vh] overflow-y-auto rounded-[26px] border-2 border-[#05102D] bg-[#FDF9F2] p-3 text-[#05102D] shadow-[4px_5px_0_#05102D] sm:inset-x-auto sm:left-[5.8rem] sm:top-1/2 sm:bottom-auto sm:w-[360px] sm:max-w-[calc(100vw-7rem)] sm:max-h-[62vh] sm:-translate-y-1/2 sm:overflow-visible sm:rounded-[30px] sm:p-4 sm:shadow-[6px_7px_0_#05102D] md:left-[6.4rem] md:motion-safe:animate-cartoon-panel">
         <div className="mb-3 flex items-center justify-between gap-3">
           <h3 className="font-serif text-xl font-black leading-none text-[#1D56CF] sm:text-2xl">
             {panelTitle}
@@ -1456,11 +1650,15 @@ function App() {
         )}
 
         {activePanel === 'filter' && (
-          <PhotoboothFilter
-            selectedFilter={selectedFilter}
-            setSelectedFilter={handleFilterChange}
-            isDisabled={isToolDisabled}
-          />
+          <>
+            <PhotoboothFilter
+              selectedFilter={selectedFilter}
+              setSelectedFilter={handleFilterChange}
+              isDisabled={isToolDisabled}
+            />
+
+            <div className="sm:hidden">{renderFilterOptionControls(true)}</div>
+          </>
         )}
       </div>
     );
@@ -1707,178 +1905,7 @@ function App() {
                     />
                   </div>
 
-                  {selectedFilter === 'classic' && (
-                    <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
-                      {classicFilterOptions.map((classicOption) => {
-                        const isSelected = selectedClassicFilter === classicOption.id;
-
-                        return (
-                          <button
-                            key={classicOption.id}
-                            type="button"
-                            onClick={() => {
-                              triggerOptionTapAnimation(
-                                'classicFilterTap',
-                                setAnimatedClassicFilterId,
-                                classicOption.id,
-                                520
-                              );
-                              setSelectedClassicFilter(classicOption.id);
-                            }}
-                            disabled={isToolDisabled}
-                            className={`
-                              flex h-10 w-10 items-center justify-center rounded-full border-2 border-[#05102D]
-                              text-xs font-black uppercase tracking-wider transition-all duration-200 ease-out
-                              md:hover:-translate-y-0.5 md:hover:shadow-[2px_3px_0_#05102D] active:translate-y-0 active:shadow-none
-                              ${
-                                isSelected
-                                  ? classicOption.id === 'fishEye'
-                                    ? 'bg-[#05102D] text-[#FDF9F2] shadow-[2px_3px_0_#05102D]'
-                                    : 'bg-[#1D56CF] text-[#FDF9F2] shadow-[2px_3px_0_#05102D]'
-                                  : 'bg-[#FDF9F2] text-[#05102D]'
-                              }
-                              ${
-                                animatedClassicFilterId === classicOption.id
-                                  ? 'md:motion-safe:animate-cartoon-pop'
-                                  : ''
-                              }
-                              ${isToolDisabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}
-                            `}
-                            aria-label={`Choose classic filter ${classicOption.label}`}
-                            title={classicOption.label}
-                          >
-                            <img
-                              src={classicOption.icon}
-                              alt=""
-                              aria-hidden="true"
-                              className="h-5 w-5 object-contain"
-                              loading="lazy"
-                              decoding="async"
-                            />
-                          </button>
-                        );
-                      })}
-                    </div>
-                  )}
-
-                  {selectedFilter === 'blackWhite' && (
-                    <div className="mt-3 flex items-center justify-center gap-2">
-                      {blackWhiteShadowColorOptions.map((colorOption) => {
-                        const isSelected = selectedBlackWhiteShadowColor === colorOption.value;
-
-                        return (
-                          <button
-                            key={colorOption.value}
-                            type="button"
-                            onClick={() => {
-                              triggerOptionTapAnimation(
-                                'colorOptionTap',
-                                setAnimatedColorOption,
-                                colorOption.value,
-                                520
-                              );
-                              triggerFilterBurstAnimation();
-                              setSelectedBlackWhiteShadowColor(colorOption.value);
-                            }}
-                            disabled={isToolDisabled}
-                            className={`
-                              h-8 w-8 rounded-full border-2 border-[#05102D] transition-all duration-200 ease-out
-                              md:hover:-translate-y-0.5 md:hover:scale-110 active:translate-y-0 active:scale-95
-                              ${isSelected ? 'scale-110 shadow-[0_0_0_4px_#1D56CF]' : ''}
-                              ${
-                                animatedColorOption === colorOption.value
-                                  ? 'md:motion-safe:animate-cartoon-pop'
-                                  : ''
-                              }
-                              ${isToolDisabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}
-                            `}
-                            style={{ backgroundColor: colorOption.color }}
-                            aria-label={`Choose black and white shadow color ${colorOption.label}`}
-                            title={colorOption.label}
-                          />
-                        );
-                      })}
-                    </div>
-                  )}
-
-                  {selectedFilter === 'dither' && (
-                    <div className="mt-3 flex items-center justify-center gap-2">
-                      {ditherColorOptions.map((color) => {
-                        const isSelected = selectedDitherColor === color;
-
-                        return (
-                          <button
-                            key={color}
-                            type="button"
-                            onClick={() => {
-                              triggerOptionTapAnimation(
-                                'colorOptionTap',
-                                setAnimatedColorOption,
-                                color,
-                                520
-                              );
-                              triggerFilterBurstAnimation();
-                              setSelectedDitherColor(color);
-                            }}
-                            disabled={isToolDisabled}
-                            className={`
-                              h-7 w-7 rounded-full transition-all duration-200 ease-out
-                              md:hover:scale-110 active:scale-95
-                              ${
-                                isSelected
-                                  ? 'scale-110 ring-2 ring-[#05102D] ring-offset-2 ring-offset-[#FDF9F2]'
-                                  : ''
-                              }
-                              ${animatedColorOption === color ? 'md:motion-safe:animate-cartoon-pop' : ''}
-                              ${isToolDisabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}
-                            `}
-                            style={{ backgroundColor: color }}
-                            aria-label={`Choose dither color ${color}`}
-                          />
-                        );
-                      })}
-                    </div>
-                  )}
-
-                  {selectedFilter === 'oldFilm' && (
-                    <div className="mt-4 flex flex-wrap items-center justify-center gap-2 rounded-[22px] bg-[#FDF9F2] px-3 py-3 sm:gap-3 sm:px-4">
-                      {oldFilmColorOptions.map((colorOption) => {
-                        const isSelected = selectedOldFilmColor === colorOption.value;
-
-                        return (
-                          <button
-                            key={colorOption.value}
-                            type="button"
-                            onClick={() => {
-                              triggerOptionTapAnimation(
-                                'colorOptionTap',
-                                setAnimatedColorOption,
-                                colorOption.value,
-                                520
-                              );
-                              triggerFilterBurstAnimation();
-                              setSelectedOldFilmColor(colorOption.value);
-                            }}
-                            disabled={isToolDisabled}
-                            className={`
-                              h-8 w-8 rounded-full border-2 border-[#05102D] transition-all duration-200 ease-out
-                              md:hover:-translate-y-0.5 md:hover:scale-110 active:translate-y-0 active:scale-95
-                              ${isSelected ? 'scale-110 shadow-[0_0_0_4px_#1D56CF]' : ''}
-                              ${
-                                animatedColorOption === colorOption.value
-                                  ? 'md:motion-safe:animate-cartoon-pop'
-                                  : ''
-                              }
-                              ${isToolDisabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}
-                            `}
-                            style={{ backgroundColor: colorOption.value }}
-                            aria-label={colorOption.label}
-                            title={colorOption.label}
-                          />
-                        );
-                      })}
-                    </div>
-                  )}
+                  <div className="hidden sm:block">{renderFilterOptionControls(false)}</div>
 
                   <div className="mt-4 grid grid-cols-1 gap-3 sm:mt-5 md:grid-cols-[1fr_auto]">
                     <button
