@@ -7,27 +7,31 @@ const HALFTONE_CREAM = '#F4F0E8';
 
 const clamp = (value) => Math.max(0, Math.min(255, value));
 
-const getCoverCrop = (sourceWidth, sourceHeight, outputWidth, outputHeight) => {
+const getCoverCrop = (sourceWidth, sourceHeight, outputWidth, outputHeight, zoomOut = 1) => {
   const sourceRatio = sourceWidth / sourceHeight;
   const outputRatio = outputWidth / outputHeight;
 
   if (sourceRatio > outputRatio) {
-    const drawWidth = sourceHeight * outputRatio;
+    const coverWidth = sourceHeight * outputRatio;
+    const drawWidth = Math.min(sourceWidth, coverWidth * zoomOut);
+    const drawHeight = Math.min(sourceHeight, drawWidth / outputRatio);
 
     return {
       offsetX: (sourceWidth - drawWidth) / 2,
-      offsetY: 0,
+      offsetY: (sourceHeight - drawHeight) / 2,
       drawWidth,
-      drawHeight: sourceHeight,
+      drawHeight,
     };
   }
 
-  const drawHeight = sourceWidth / outputRatio;
+  const coverHeight = sourceWidth / outputRatio;
+  const drawHeight = Math.min(sourceHeight, coverHeight * zoomOut);
+  const drawWidth = Math.min(sourceWidth, drawHeight * outputRatio);
 
   return {
-    offsetX: 0,
+    offsetX: (sourceWidth - drawWidth) / 2,
     offsetY: (sourceHeight - drawHeight) / 2,
-    drawWidth: sourceWidth,
+    drawWidth,
     drawHeight,
   };
 };
@@ -144,14 +148,15 @@ const addFineGrain = (context, width, height, intensity = 1) => {
 };
 
 const addVisibleGrainDots = (context, width, height, intensity = 1) => {
-  const dotCount = Math.floor((width * height * intensity) / 780);
+  const isMobileFilterCanvas = getIsMobileFilterCanvas(width, height);
+  const dotCount = Math.floor((width * height * intensity) / (isMobileFilterCanvas ? 1280 : 780));
 
   context.save();
 
   for (let i = 0; i < dotCount; i += 1) {
     const x = Math.random() * width;
     const y = Math.random() * height;
-    const size = Math.random() * 1.9 + 0.55;
+    const size = isMobileFilterCanvas ? Math.random() * 0.8 + 0.25 : Math.random() * 1.9 + 0.55;
     const isLight = Math.random() > 0.52;
 
     context.globalAlpha = Math.random() * 0.2 + 0.06;
@@ -335,9 +340,11 @@ const addMultiplyOverlay = (context, width, height, color, alpha = 0.12) => {
 };
 
 const addBlueHalftone = (context, width, height, options = {}) => {
+  const isMobileFilterCanvas = getIsMobileFilterCanvas(width, height);
+
   const {
-    spacing = 4.2,
-    maxRadius = 1.65,
+    spacing = isMobileFilterCanvas ? 2.7 : 4.2,
+    maxRadius = isMobileFilterCanvas ? 0.72 : 1.65,
     alpha = 0.72,
     blue = NEWJEANS_BLUE,
     thresholdBoost = -4,
@@ -463,9 +470,9 @@ const applyOrderedDither = (context, width, height, ditherColor = NAVY, settings
   if (!sourceContext) return;
 
   const isMobileFilterCanvas = getIsMobileFilterCanvas(width, height);
-  const dotSpacing = settings.dotSpacing || (isMobileFilterCanvas ? 2.6 : 4.4);
-  const maxDotRadius = settings.maxDotRadius || dotSpacing * (isMobileFilterCanvas ? 0.42 : 0.54);
-  const minDotRadius = settings.minDotRadius || (isMobileFilterCanvas ? 0.16 : 0.28);
+  const dotSpacing = settings.dotSpacing || (isMobileFilterCanvas ? 2.15 : 4.4);
+  const maxDotRadius = settings.maxDotRadius || dotSpacing * (isMobileFilterCanvas ? 0.34 : 0.54);
+  const minDotRadius = settings.minDotRadius || (isMobileFilterCanvas ? 0.1 : 0.28);
   const contrastAmount = settings.contrast || 1.38;
   const exposureBoost = settings.exposure || 12;
   const whiteCutoff = settings.whiteCutoff || 238;
@@ -524,8 +531,8 @@ const applyOrderedDither = (context, width, height, ditherColor = NAVY, settings
       if (shouldConnect) {
         context.globalAlpha = Math.min(0.82, shapedDarkness * 0.78);
         context.lineWidth = Math.max(
-          isMobileFilterCanvas ? 0.38 : 0.7,
-          shapedDarkness * (isMobileFilterCanvas ? 0.9 : 1.65)
+          isMobileFilterCanvas ? 0.26 : 0.7,
+          shapedDarkness * (isMobileFilterCanvas ? 0.65 : 1.65)
         );
         context.lineCap = 'round';
         context.strokeStyle = `rgb(${ink.red}, ${ink.green}, ${ink.blue})`;
@@ -545,7 +552,7 @@ const applyOrderedDither = (context, width, height, ditherColor = NAVY, settings
 
       if (shouldFillHeavyShadow) {
         context.globalAlpha = Math.min(0.52, (shapedDarkness - 0.62) * 1.35);
-        const shadowBlockSize = isMobileFilterCanvas ? 0.68 : 0.96;
+        const shadowBlockSize = isMobileFilterCanvas ? 0.52 : 0.96;
 
         context.fillRect(
           x - dotSpacing * (shadowBlockSize / 2),
@@ -950,9 +957,11 @@ const applyFilterOverlay = (context, width, height, filterType, options = {}) =>
   if (filterType === 'vintageBlue') {
     addScreenOverlay(context, width, height, HALFTONE_CREAM, 0.05);
 
+    const isMobileFilterCanvas = getIsMobileFilterCanvas(width, height);
+
     addBlueHalftone(context, width, height, {
-      spacing: 4.2,
-      maxRadius: 1.65,
+      spacing: isMobileFilterCanvas ? 2.7 : 4.2,
+      maxRadius: isMobileFilterCanvas ? 0.72 : 1.65,
       alpha: 0.72,
       blue: NEWJEANS_BLUE,
       thresholdBoost: -4,
@@ -1051,7 +1060,13 @@ const applyCanvasFilter = (
     const isMobileFilterCanvas = getIsMobileFilterCanvas(width, height);
 
     applyGreenNightFilter(context, width, height);
-    addTexture(context, width, height, isMobileFilterCanvas ? 4.2 : 6.8, isMobileFilterCanvas ? 1.4 : 3.5);
+    addTexture(
+      context,
+      width,
+      height,
+      isMobileFilterCanvas ? 3.1 : 6.8,
+      isMobileFilterCanvas ? 0.75 : 3.5
+    );
     return;
   }
 
@@ -1220,7 +1235,8 @@ const PhotoboothCameraPreview = forwardRef(function PhotoboothCameraPreview(
       sourceWidth,
       sourceHeight,
       outputWidth,
-      outputHeight
+      outputHeight,
+      getIsMobileFilterCanvas(outputWidth, outputHeight) ? 1.18 : 1
     );
 
     context.globalCompositeOperation = 'source-over';
