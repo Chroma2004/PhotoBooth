@@ -118,7 +118,7 @@ const getPreviewFrameInterval = (filterType, isMobilePreview = false) => {
 const isVideoDrawable = (video) => {
   return Boolean(
     video &&
-      video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA &&
+      video.readyState >= 2 &&
       video.videoWidth > 0 &&
       video.videoHeight > 0 &&
       !video.ended
@@ -1191,11 +1191,11 @@ const PhotoboothCameraPreview = forwardRef(function PhotoboothCameraPreview(
 
     canvas.style.backgroundColor = '#05102D';
 
-    const context = canvas.getContext('2d', {
-      alpha: true,
-      desynchronized: true,
-      willReadFrequently: true,
-    });
+    const context =
+      canvas.getContext('2d', {
+        alpha: true,
+        willReadFrequently: true,
+      }) || canvas.getContext('2d');
 
     if (!context) return null;
 
@@ -1299,10 +1299,14 @@ const PhotoboothCameraPreview = forwardRef(function PhotoboothCameraPreview(
       try {
         await waitForVideoMetadata(video);
 
-        const playPromise = video.play();
+        try {
+          const playPromise = video.play();
 
-        if (playPromise !== undefined) {
-          await playPromise;
+          if (playPromise !== undefined) {
+            await playPromise;
+          }
+        } catch {
+          // Mobile browsers can report a play interruption even when the camera stream is usable.
         }
 
         if (!isMountedRef.current) return;
@@ -1427,7 +1431,7 @@ const PhotoboothCameraPreview = forwardRef(function PhotoboothCameraPreview(
         playsInline
         muted
         webkit-playsinline="true"
-        className={`pointer-events-none absolute inset-0 h-full w-full scale-x-[-1] object-cover ${
+        className={`pointer-events-none absolute inset-0 z-[1] h-full w-full scale-x-[-1] object-cover ${
           isCameraOn ? 'opacity-100' : 'opacity-0'
         }`}
       />
@@ -1436,7 +1440,7 @@ const PhotoboothCameraPreview = forwardRef(function PhotoboothCameraPreview(
         ref={previewCanvasRef}
         className={`pointer-events-none absolute inset-0 z-[5] h-full w-full object-cover transition-opacity duration-75 ${
           isCameraOn && isCameraReady && hasFilteredPreviewFrame ? 'opacity-100' : 'opacity-0'
-        } [image-rendering:auto]`}
+        } [image-rendering:auto] [transform:translateZ(0)]`}
       />
 
       <canvas ref={captureCanvasRef} className="hidden" />
@@ -1446,7 +1450,7 @@ const PhotoboothCameraPreview = forwardRef(function PhotoboothCameraPreview(
       )}
 
       <div className="pointer-events-none absolute inset-0 z-[9] bg-[linear-gradient(rgba(253,249,242,.35)_1px,transparent_1px)] bg-[length:100%_4px] opacity-[0.12]" />
-s
+
       {isFilterBurstAnimating && (
         <div
           key={filterBurstKey}
