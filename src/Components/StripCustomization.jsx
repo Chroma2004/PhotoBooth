@@ -50,7 +50,7 @@ function StickerButton({ sticker, onClick }) {
       type="button"
       onClick={() => onClick?.(sticker)}
       aria-label={`Add ${sticker.label} sticker`}
-      className="group relative flex h-10 w-full min-w-0 items-center justify-center overflow-hidden rounded-xl border-2 border-[#05102D] bg-[#FDF9F2] p-1.5 shadow-[2px_3px_0_#05102D] transition-[transform,background-color,box-shadow] duration-150 ease-out sm:h-11 md:h-12 md:w-12 md:rounded-2xl md:p-2 md:motion-safe:animate-customize-mobile-button-pop md:hover:-translate-y-1 md:hover:rotate-[3deg] md:hover:bg-white md:hover:shadow-[4px_5px_0_#05102D] active:translate-y-1 active:rotate-[-2deg] active:scale-95 active:shadow-none"
+      className="group relative flex h-8 w-full min-w-0 items-center justify-center overflow-hidden rounded-xl border-2 border-[#05102D] bg-[#FDF9F2] p-1 shadow-[2px_3px_0_#05102D] transition-[transform,background-color,box-shadow] duration-150 ease-out sm:h-9 sm:p-1.5 md:h-12 md:w-12 md:rounded-2xl md:p-2 md:motion-safe:animate-customize-mobile-button-pop md:hover:-translate-y-1 md:hover:rotate-[3deg] md:hover:bg-white md:hover:shadow-[4px_5px_0_#05102D] active:translate-y-1 active:rotate-[-2deg] active:scale-95 active:shadow-none"
     >
       <span className="pointer-events-none absolute inset-0 hidden bg-[#1D56CF]/10 opacity-0 md:block md:group-hover:animate-customize-soft-shine-once" />
 
@@ -186,6 +186,8 @@ function StripCustomization({
   cream = '#FDF9F2',
 }) {
   const [isDrawerOpen, setIsDrawerOpen] = useState(true);
+  const [dragStartY, setDragStartY] = useState(null);
+  const [dragCurrentY, setDragCurrentY] = useState(null);
 
   const mergedStickerOptions = useMemo(() => {
     const seenStickerKeys = new Set();
@@ -206,12 +208,55 @@ function StripCustomization({
     setIsDrawerOpen((current) => !current);
   };
 
+  const handleDrawerTouchStart = (event) => {
+    const touch = event.touches?.[0];
+
+    if (!touch) return;
+
+    setDragStartY(touch.clientY);
+    setDragCurrentY(touch.clientY);
+  };
+
+  const handleDrawerTouchMove = (event) => {
+    const touch = event.touches?.[0];
+
+    if (!touch || dragStartY === null) return;
+
+    setDragCurrentY(touch.clientY);
+  };
+
+  const handleDrawerTouchEnd = () => {
+    if (dragStartY === null || dragCurrentY === null) {
+      setDragStartY(null);
+      setDragCurrentY(null);
+      return;
+    }
+
+    const dragDistance = dragCurrentY - dragStartY;
+    const dragThreshold = 34;
+
+    if (dragDistance > dragThreshold) {
+      setIsDrawerOpen(false);
+    }
+
+    if (dragDistance < -dragThreshold) {
+      setIsDrawerOpen(true);
+    }
+
+    setDragStartY(null);
+    setDragCurrentY(null);
+  };
+
   const handleClose = () => {
     onClose?.();
   };
 
   return (
     <aside
+      onTouchStart={handleDrawerTouchStart}
+      onTouchMove={handleDrawerTouchMove}
+      onTouchEnd={handleDrawerTouchEnd}
+      onTouchCancel={handleDrawerTouchEnd}
       className={`
         fixed inset-x-2 bottom-2 z-[120] mx-auto flex min-h-0 w-auto max-w-xl flex-col overflow-hidden border-2 border-[#05102D] bg-[#FDF9F2]
         shadow-[0_-10px_34px_rgba(5,16,45,0.28),4px_5px_0_#05102D] transition-[height,max-height,border-radius,padding,transform,opacity] duration-200 ease-out md:motion-safe:animate-customize-drawer-up
@@ -223,14 +268,12 @@ function StripCustomization({
         }
       `}
     >
-      <button
-        type="button"
-        onClick={handleToggleDrawer}
-        className="mb-2 flex shrink-0 items-center justify-center rounded-full py-1 lg:hidden"
-        aria-label={isDrawerOpen ? 'Hide customization drawer' : 'Open customization drawer'}
+      <div
+        className="mb-2 flex shrink-0 touch-none items-center justify-center rounded-full py-1 lg:hidden"
+        aria-hidden="true"
       >
-        <span className="h-1.5 w-14 rounded-full bg-[#05102D]/25 transition-[width,background-color] duration-150 active:w-16 active:bg-[#1D56CF]" />
-      </button>
+        <span className="h-1.5 w-14 rounded-full bg-[#05102D]/25 transition-[width,background-color] duration-150" />
+      </div>
 
       <div
         className={`
@@ -261,17 +304,6 @@ function StripCustomization({
           aria-label="Close customization panel"
         >
           <span aria-hidden="true">×</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={handleToggleDrawer}
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border-2 border-[#05102D] bg-[#FDF9F2] text-[#05102D] shadow-[2px_3px_0_#05102D] transition-[transform,box-shadow] duration-150 active:translate-y-1 active:scale-90 active:shadow-none sm:h-10 sm:w-10 lg:hidden"
-          aria-label={isDrawerOpen ? 'Hide customization drawer' : 'Open customization drawer'}
-        >
-          <span className="relative flex h-7 w-7 items-center justify-center">
-            <ArrowHeadIcon isOpen={isDrawerOpen} />
-          </span>
         </button>
       </div>
 
@@ -341,7 +373,7 @@ function StripCustomization({
 
         <SectionCard title="Stickers">
           <div className="rounded-[18px] border-2 border-[#05102D] bg-[#FDF9F2] p-2 shadow-[2px_3px_0_#05102D] sm:rounded-[22px] sm:p-2.5 sm:shadow-[3px_4px_0_#05102D]">
-            <div className="grid grid-cols-5 gap-1.5 sm:grid-cols-5 sm:gap-2">
+            <div className="grid grid-cols-6 gap-1.5 sm:grid-cols-5 sm:gap-2">
               {mergedStickerOptions.map((sticker) => (
                 <StickerButton key={sticker.id} sticker={sticker} onClick={onAddSticker} />
               ))}
