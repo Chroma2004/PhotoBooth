@@ -115,6 +115,8 @@ const getPreviewFrameInterval = (filterType, isMobilePreview = false) => {
   return expensiveFilters.has(filterType) ? 1000 / 8 : 1000 / 12;
 };
 
+const getIsMobileFilterCanvas = (width, height) => width <= 360 || height <= 260;
+
 const isVideoDrawable = (video) => {
   return Boolean(
     video &&
@@ -375,7 +377,7 @@ const addBlueHalftone = (context, width, height, options = {}) => {
 const applyPixelArtGrid = (context, width, height) => {
   const pixelCanvas = document.createElement('canvas');
   const pixelContext = pixelCanvas.getContext('2d');
-  const scale = 0.14;
+  const scale = getIsMobileFilterCanvas(width, height) ? 0.24 : 0.14;
 
   if (!pixelContext) return;
 
@@ -460,9 +462,10 @@ const applyOrderedDither = (context, width, height, ditherColor = NAVY, settings
 
   if (!sourceContext) return;
 
-  const dotSpacing = settings.dotSpacing || 4.4;
-  const maxDotRadius = settings.maxDotRadius || dotSpacing * 0.54;
-  const minDotRadius = settings.minDotRadius || 0.28;
+  const isMobileFilterCanvas = getIsMobileFilterCanvas(width, height);
+  const dotSpacing = settings.dotSpacing || (isMobileFilterCanvas ? 2.6 : 4.4);
+  const maxDotRadius = settings.maxDotRadius || dotSpacing * (isMobileFilterCanvas ? 0.42 : 0.54);
+  const minDotRadius = settings.minDotRadius || (isMobileFilterCanvas ? 0.16 : 0.28);
   const contrastAmount = settings.contrast || 1.38;
   const exposureBoost = settings.exposure || 12;
   const whiteCutoff = settings.whiteCutoff || 238;
@@ -520,7 +523,10 @@ const applyOrderedDither = (context, width, height, ditherColor = NAVY, settings
 
       if (shouldConnect) {
         context.globalAlpha = Math.min(0.82, shapedDarkness * 0.78);
-        context.lineWidth = Math.max(0.7, shapedDarkness * 1.65);
+        context.lineWidth = Math.max(
+          isMobileFilterCanvas ? 0.38 : 0.7,
+          shapedDarkness * (isMobileFilterCanvas ? 0.9 : 1.65)
+        );
         context.lineCap = 'round';
         context.strokeStyle = `rgb(${ink.red}, ${ink.green}, ${ink.blue})`;
 
@@ -539,11 +545,13 @@ const applyOrderedDither = (context, width, height, ditherColor = NAVY, settings
 
       if (shouldFillHeavyShadow) {
         context.globalAlpha = Math.min(0.52, (shapedDarkness - 0.62) * 1.35);
+        const shadowBlockSize = isMobileFilterCanvas ? 0.68 : 0.96;
+
         context.fillRect(
-          x - dotSpacing * 0.48,
-          y - dotSpacing * 0.48,
-          dotSpacing * 0.96,
-          dotSpacing * 0.96
+          x - dotSpacing * (shadowBlockSize / 2),
+          y - dotSpacing * (shadowBlockSize / 2),
+          dotSpacing * shadowBlockSize,
+          dotSpacing * shadowBlockSize
         );
       }
     }
@@ -591,8 +599,11 @@ const applyGreenNightFilter = (context, width, height) => {
   context.globalCompositeOperation = 'multiply';
   context.fillStyle = '#001207';
 
-  for (let y = 0; y < height; y += 3) {
-    context.fillRect(0, y, width, 1);
+  const scanlineGap = getIsMobileFilterCanvas(width, height) ? 2 : 3;
+  const scanlineHeight = getIsMobileFilterCanvas(width, height) ? 0.5 : 1;
+
+  for (let y = 0; y < height; y += scanlineGap) {
+    context.fillRect(0, y, width, scanlineHeight);
   }
 
   context.globalAlpha = 0.24;
@@ -607,9 +618,12 @@ const addDreamHighlightSparkles = (context, width, height) => {
   const imageData = context.getImageData(0, 0, width, height);
   const data = imageData.data;
   const candidates = [];
+  const isMobileFilterCanvas = getIsMobileFilterCanvas(width, height);
+  const sampleStep = isMobileFilterCanvas ? 8 : 12;
+  const edgePadding = isMobileFilterCanvas ? 8 : 12;
 
-  for (let y = 12; y < height - 12; y += 12) {
-    for (let x = 12; x < width - 12; x += 12) {
+  for (let y = edgePadding; y < height - edgePadding; y += sampleStep) {
+    for (let x = edgePadding; x < width - edgePadding; x += sampleStep) {
       const i = (y * width + x) * 4;
       const red = data[i];
       const green = data[i + 1];
@@ -630,7 +644,8 @@ const addDreamHighlightSparkles = (context, width, height) => {
     .sort((a, b) => b.brightness - a.brightness)
     .slice(0, 120)
     .forEach((sparkle, index) => {
-      const size = 11 + (sparkle.brightness - 145) * 0.18;
+      const sizeMultiplier = isMobileFilterCanvas ? 0.48 : 1;
+      const size = (11 + (sparkle.brightness - 145) * 0.18) * sizeMultiplier;
       const alpha = Math.min(0.78, 0.22 + (sparkle.brightness - 145) / 155);
       const rayLength = size * (index % 3 === 0 ? 1.22 : 0.78);
 
@@ -1023,7 +1038,7 @@ const applyCanvasFilter = (
 
   if (filterType === 'pixel') {
     applyPixelArtGrid(context, width, height);
-    addTexture(context, width, height, 0.45);
+    addTexture(context, width, height, getIsMobileFilterCanvas(width, height) ? 0.28 : 0.45);
     return;
   }
 
@@ -1033,8 +1048,10 @@ const applyCanvasFilter = (
   }
 
   if (filterType === 'greenNight') {
+    const isMobileFilterCanvas = getIsMobileFilterCanvas(width, height);
+
     applyGreenNightFilter(context, width, height);
-    addTexture(context, width, height, 6.8, 3.5);
+    addTexture(context, width, height, isMobileFilterCanvas ? 4.2 : 6.8, isMobileFilterCanvas ? 1.4 : 3.5);
     return;
   }
 
