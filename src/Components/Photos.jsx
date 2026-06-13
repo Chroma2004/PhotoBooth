@@ -335,6 +335,41 @@ const sanitizeFileName = (name = 'photo-strip') =>
     .replace(/\s+/g, '-')
     .toLowerCase() || 'photo-strip';
 
+const downloadCanvasAsImage = (canvas, fileName = 'photo-strip.png') => {
+  const triggerDownload = (href) => {
+    const link = document.createElement('a');
+    link.download = fileName;
+    link.href = href;
+    link.rel = 'noopener';
+    link.target = '_blank';
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+  };
+
+  if (canvas.toBlob) {
+    canvas.toBlob((blob) => {
+      if (!blob) {
+        const dataUrl = canvas.toDataURL('image/png');
+        triggerDownload(dataUrl);
+        return;
+      }
+
+      const blobUrl = URL.createObjectURL(blob);
+      triggerDownload(blobUrl);
+
+      window.setTimeout(() => {
+        URL.revokeObjectURL(blobUrl);
+      }, 2500);
+    }, 'image/png');
+
+    return;
+  }
+
+  const dataUrl = canvas.toDataURL('image/png');
+  triggerDownload(dataUrl);
+};
+
 const loadCanvasImage = (src) =>
   new Promise((resolve, reject) => {
     if (!src) {
@@ -623,12 +658,7 @@ const downloadExactPhotoStrip = async (photo, stickers = []) => {
     }
   }
 
-  const link = document.createElement('a');
-  link.download = `${sanitizeFileName(photo?.label || 'photo-strip')}.png`;
-  link.href = canvas.toDataURL('image/png');
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
+  downloadCanvasAsImage(canvas, `${sanitizeFileName(photo?.label || 'photo-strip')}.png`);
 };
 
 const CleanPhotoStrip = memo(function CleanPhotoStrip({
@@ -681,20 +711,20 @@ const CleanPhotoStrip = memo(function CleanPhotoStrip({
     if (isLargeDownloadedSticker(sticker)) {
       return isLarge
         ? isFourFrameStrip
-          ? 'h-24 w-24'
-          : 'h-32 w-32'
+          ? 'h-[68px] w-[68px] md:h-24 md:w-24'
+          : 'h-[88px] w-[88px] md:h-32 md:w-32'
         : isFourFrameStrip
-          ? 'h-20 w-20'
-          : 'h-28 w-28';
+          ? 'h-14 w-14 md:h-20 md:w-20'
+          : 'h-20 w-20 md:h-28 md:w-28';
     }
 
     return isLarge
       ? isFourFrameStrip
-        ? 'h-14 w-14'
-        : 'h-20 w-20'
+        ? 'h-10 w-10 md:h-14 md:w-14'
+        : 'h-14 w-14 md:h-20 md:w-20'
       : isFourFrameStrip
-        ? 'h-10 w-10'
-        : 'h-14 w-14';
+        ? 'h-8 w-8 md:h-10 md:w-10'
+        : 'h-10 w-10 md:h-14 md:w-14';
   };
 
   return (
@@ -1384,7 +1414,23 @@ function Photos({
               }
             `}
           >
-            <div className="relative flex min-h-0 items-center justify-center p-1 md:motion-safe:animate-edit-preview-pop md:p-2">
+            <div className="relative flex min-h-0 flex-col items-center justify-center gap-2 p-1 md:motion-safe:animate-edit-preview-pop md:p-2">
+              <button
+                type="button"
+                onClick={() => handleDownloadPhoto(selectedPhoto)}
+                className="photo2y-no-cartoon-animation flex items-center justify-center gap-2 rounded-xl border-2 border-[#05102D] bg-[#1D56CF] px-4 py-2 text-xs font-black uppercase tracking-wide text-[#FDF9F2] shadow-[2px_3px_0_#05102D] transition-[transform,background-color,box-shadow] duration-150 md:hidden active:translate-y-1 active:scale-[0.98] active:shadow-none"
+              >
+                <img
+                  src={actionIcons.save}
+                  alt=""
+                  aria-hidden="true"
+                  className="h-4 w-4 object-contain"
+                  loading="lazy"
+                  decoding="async"
+                />
+                Download
+              </button>
+
               <div
                 data-photo-strip-preview
                 className={`
