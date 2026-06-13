@@ -97,8 +97,8 @@ const getIsMobileDevice = () => {
 const getPreviewSize = (isMobilePreview = false) => {
   if (isMobilePreview) {
     return {
-      width: 480,
-      height: 360,
+      width: 320,
+      height: 240,
     };
   }
 
@@ -112,7 +112,7 @@ const getPreviewFrameInterval = (filterType, isMobilePreview = false) => {
   if (!isMobilePreview) return 1000 / 30;
 
   const expensiveFilters = new Set(['dither', 'greenNight', 'thermal', 'pixel', 'dream']);
-  return expensiveFilters.has(filterType) ? 1000 / 10 : 1000 / 16;
+  return expensiveFilters.has(filterType) ? 1000 / 8 : 1000 / 12;
 };
 
 const isVideoDrawable = (video) => {
@@ -121,7 +121,6 @@ const isVideoDrawable = (video) => {
       video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA &&
       video.videoWidth > 0 &&
       video.videoHeight > 0 &&
-      !video.paused &&
       !video.ended
   );
 };
@@ -1190,6 +1189,8 @@ const PhotoboothCameraPreview = forwardRef(function PhotoboothCameraPreview(
     if (canvas.width !== outputWidth) canvas.width = outputWidth;
     if (canvas.height !== outputHeight) canvas.height = outputHeight;
 
+    canvas.style.backgroundColor = '#05102D';
+
     const context = canvas.getContext('2d', {
       alpha: true,
       desynchronized: true,
@@ -1227,16 +1228,20 @@ const PhotoboothCameraPreview = forwardRef(function PhotoboothCameraPreview(
 
     const activeSettings = latestPreviewSettingsRef.current;
 
-    applyCanvasFilter(
-      context,
-      outputWidth,
-      outputHeight,
-      activeSettings.selectedFilter,
-      activeSettings.selectedClassicFilter,
-      activeSettings.selectedDitherColor,
-      activeSettings.selectedOldFilmColor,
-      activeSettings.filterEffectSettings
-    );
+    try {
+      applyCanvasFilter(
+        context,
+        outputWidth,
+        outputHeight,
+        activeSettings.selectedFilter,
+        activeSettings.selectedClassicFilter,
+        activeSettings.selectedDitherColor,
+        activeSettings.selectedOldFilmColor,
+        activeSettings.filterEffectSettings
+      );
+    } catch (filterError) {
+      console.error('Photo2y filter preview failed:', filterError);
+    }
 
     return shouldReturnDataUrl ? canvas.toDataURL('image/png') : true;
   };
@@ -1339,19 +1344,9 @@ const PhotoboothCameraPreview = forwardRef(function PhotoboothCameraPreview(
 
     const previewSize = getPreviewSize(isMobilePreview);
     let isPreviewLoopActive = true;
-    let videoFrameCallbackId = null;
 
     const scheduleNextFrame = () => {
       if (!isPreviewLoopActive) return;
-
-      const video = videoRef.current;
-
-      if (video && typeof video.requestVideoFrameCallback === 'function') {
-        videoFrameCallbackId = video.requestVideoFrameCallback((now) => {
-          renderPreview(now);
-        });
-        return;
-      }
 
       animationRef.current = requestAnimationFrame(renderPreview);
     };
@@ -1394,7 +1389,17 @@ const PhotoboothCameraPreview = forwardRef(function PhotoboothCameraPreview(
     };
 
     const startPreviewLoop = () => {
-      if (!isVideoDrawable(videoRef.current)) {
+      const video = videoRef.current;
+
+      if (!isVideoDrawable(video)) {
+        if (video && stream && video.srcObject !== stream) {
+          video.srcObject = stream;
+        }
+
+        if (video && video.paused && stream) {
+          video.play().catch(() => {});
+        }
+
         animationRef.current = requestAnimationFrame(startPreviewLoop);
         return;
       }
@@ -1409,18 +1414,10 @@ const PhotoboothCameraPreview = forwardRef(function PhotoboothCameraPreview(
 
       if (animationRef.current) cancelAnimationFrame(animationRef.current);
 
-      if (
-        videoFrameCallbackId !== null &&
-        videoRef.current &&
-        typeof videoRef.current.cancelVideoFrameCallback === 'function'
-      ) {
-        videoRef.current.cancelVideoFrameCallback(videoFrameCallbackId);
-      }
-
       animationRef.current = null;
       lastFrameTimeRef.current = 0;
     };
-  }, [isCameraOn, isCameraReady, isMobilePreview]);
+  }, [isCameraOn, isCameraReady, isMobilePreview, stream]);
 
   return (
     <div className="relative flex aspect-[16/9] max-h-[72vh] w-full items-center justify-center overflow-hidden rounded-[34px] border-2 border-[#05102D] bg-[#05102D] [transform:translateZ(0)]">
@@ -1439,7 +1436,7 @@ const PhotoboothCameraPreview = forwardRef(function PhotoboothCameraPreview(
         ref={previewCanvasRef}
         className={`pointer-events-none absolute inset-0 z-[5] h-full w-full object-cover transition-opacity duration-75 ${
           isCameraOn && isCameraReady && hasFilteredPreviewFrame ? 'opacity-100' : 'opacity-0'
-        }`}
+        } [image-rendering:auto]`}
       />
 
       <canvas ref={captureCanvasRef} className="hidden" />
@@ -1449,7 +1446,7 @@ const PhotoboothCameraPreview = forwardRef(function PhotoboothCameraPreview(
       )}
 
       <div className="pointer-events-none absolute inset-0 z-[9] bg-[linear-gradient(rgba(253,249,242,.35)_1px,transparent_1px)] bg-[length:100%_4px] opacity-[0.12]" />
-
+s
       {isFilterBurstAnimating && (
         <div
           key={filterBurstKey}
