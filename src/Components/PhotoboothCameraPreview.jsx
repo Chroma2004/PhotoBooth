@@ -485,7 +485,7 @@ const applyOrderedDither = (context, width, height, ditherColor = NAVY, settings
   const whiteCutoff = settings.whiteCutoff || (isMobileFilterCanvas ? 236 : 238);
   const detailCutoff = settings.detailCutoff || (isMobileFilterCanvas ? 0.052 : 0.055);
   const ink = hexToRgb(ditherColor);
-  const paperColor = '#FFFFFF';
+  const paperColor = isMobileFilterCanvas ? '#FBFAF6' : '#FFFFFF';
 
   sourceCanvas.width = width;
   sourceCanvas.height = height;
@@ -501,11 +501,19 @@ const applyOrderedDither = (context, width, height, ditherColor = NAVY, settings
   context.save();
   context.fillStyle = `rgb(${ink.red}, ${ink.green}, ${ink.blue})`;
 
-  for (let y = dotSpacing / 2; y < height; y += dotSpacing) {
+  for (
+    let y = isMobileFilterCanvas ? -dotSpacing : dotSpacing / 2;
+    y < height + dotSpacing;
+    y += dotSpacing
+  ) {
     const rowIndex = Math.floor(y / dotSpacing);
-    const rowOffset = rowIndex % 2 === 0 ? 0 : dotSpacing * 0.5;
+    const rowOffset = isMobileFilterCanvas ? 0 : rowIndex % 2 === 0 ? 0 : dotSpacing * 0.5;
 
-    for (let x = dotSpacing / 2 - rowOffset; x < width; x += dotSpacing) {
+    for (
+      let x = isMobileFilterCanvas ? -dotSpacing : dotSpacing / 2 - rowOffset;
+      x < width + dotSpacing;
+      x += dotSpacing
+    ) {
       const sampleX = Math.min(width - 1, Math.max(0, Math.floor(x)));
       const sampleY = Math.min(height - 1, Math.max(0, Math.floor(y)));
       const index = (sampleY * width + sampleX) * 4;
@@ -526,8 +534,8 @@ const applyOrderedDither = (context, width, height, ditherColor = NAVY, settings
       if (shapedDarkness < detailCutoff) continue;
 
       const radius = Math.max(minDotRadius, shapedDarkness * maxDotRadius);
-      const dotX = isMobileFilterCanvas ? Math.round(x) + 0.5 : x;
-      const dotY = isMobileFilterCanvas ? Math.round(y) + 0.5 : y;
+      const dotX = isMobileFilterCanvas ? Math.round(x) : x;
+      const dotY = isMobileFilterCanvas ? Math.round(y) : y;
       const alpha = Math.min(
         isMobileFilterCanvas ? 0.98 : 0.96,
         (isMobileFilterCanvas ? 0.3 : 0.2) +
@@ -593,11 +601,20 @@ const applyOrderedDither = (context, width, height, ditherColor = NAVY, settings
   context.fillRect(0, 0, width, height);
   context.restore();
 
+  if (isMobileFilterCanvas) {
+    context.save();
+    context.globalAlpha = 0.018;
+    context.globalCompositeOperation = 'multiply';
+    context.fillStyle = `rgb(${ink.red}, ${ink.green}, ${ink.blue})`;
+    context.fillRect(0, 0, width, height);
+    context.restore();
+  }
+
   addVignette(
     context,
     width,
     height,
-    isMobileFilterCanvas ? 'rgba(5,16,45,0.018)' : 'rgba(5,16,45,0.032)',
+    isMobileFilterCanvas ? 'rgba(5,16,45,0.014)' : 'rgba(5,16,45,0.032)',
     0.96
   );
 };
@@ -1405,7 +1422,6 @@ const PhotoboothCameraPreview = forwardRef(function PhotoboothCameraPreview(
       return;
     }
 
-    // const previewSize = getPreviewSize(isMobilePreview);
     let isPreviewLoopActive = true;
 
     const scheduleNextFrame = () => {
