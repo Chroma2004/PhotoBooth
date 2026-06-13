@@ -470,13 +470,13 @@ const applyOrderedDither = (context, width, height, ditherColor = NAVY, settings
   if (!sourceContext) return;
 
   const isMobileFilterCanvas = getIsMobileFilterCanvas(width, height);
-  const dotSpacing = settings.dotSpacing || (isMobileFilterCanvas ? 2.15 : 4.4);
-  const maxDotRadius = settings.maxDotRadius || dotSpacing * (isMobileFilterCanvas ? 0.34 : 0.54);
-  const minDotRadius = settings.minDotRadius || (isMobileFilterCanvas ? 0.1 : 0.28);
-  const contrastAmount = settings.contrast || 1.38;
-  const exposureBoost = settings.exposure || 12;
-  const whiteCutoff = settings.whiteCutoff || 238;
-  const detailCutoff = settings.detailCutoff || 0.055;
+  const dotSpacing = settings.dotSpacing || (isMobileFilterCanvas ? 2.85 : 4.4);
+  const maxDotRadius = settings.maxDotRadius || dotSpacing * (isMobileFilterCanvas ? 0.36 : 0.54);
+  const minDotRadius = settings.minDotRadius || (isMobileFilterCanvas ? 0.14 : 0.28);
+  const contrastAmount = settings.contrast || (isMobileFilterCanvas ? 1.22 : 1.38);
+  const exposureBoost = settings.exposure || (isMobileFilterCanvas ? 16 : 12);
+  const whiteCutoff = settings.whiteCutoff || (isMobileFilterCanvas ? 232 : 238);
+  const detailCutoff = settings.detailCutoff || (isMobileFilterCanvas ? 0.075 : 0.055);
   const ink = hexToRgb(ditherColor);
   const paperColor = '#FFFFFF';
 
@@ -514,14 +514,20 @@ const applyOrderedDither = (context, width, height, ditherColor = NAVY, settings
 
       const boosted = clamp(adjustContrast(luma + exposureBoost, contrastAmount));
       const darkness = clamp(255 - boosted) / 255;
-      const shapedDarkness = Math.pow(darkness, 0.88);
+      const shapedDarkness = Math.pow(darkness, isMobileFilterCanvas ? 1.08 : 0.88);
 
       if (shapedDarkness < detailCutoff) continue;
 
       const radius = Math.max(minDotRadius, shapedDarkness * maxDotRadius);
-      const alpha = Math.min(0.96, 0.2 + shapedDarkness * 0.9);
-      const shouldConnect = shapedDarkness > 0.42;
-      const shouldFillHeavyShadow = shapedDarkness > 0.72;
+      const alpha = Math.min(
+        isMobileFilterCanvas ? 0.82 : 0.96,
+        (isMobileFilterCanvas ? 0.14 : 0.2) +
+          shapedDarkness * (isMobileFilterCanvas ? 0.74 : 0.9)
+      );
+      const shouldConnect = isMobileFilterCanvas ? shapedDarkness > 0.68 : shapedDarkness > 0.42;
+      const shouldFillHeavyShadow = isMobileFilterCanvas
+        ? shapedDarkness > 0.86
+        : shapedDarkness > 0.72;
 
       context.globalAlpha = alpha;
       context.beginPath();
@@ -531,8 +537,8 @@ const applyOrderedDither = (context, width, height, ditherColor = NAVY, settings
       if (shouldConnect) {
         context.globalAlpha = Math.min(0.82, shapedDarkness * 0.78);
         context.lineWidth = Math.max(
-          isMobileFilterCanvas ? 0.26 : 0.7,
-          shapedDarkness * (isMobileFilterCanvas ? 0.65 : 1.65)
+          isMobileFilterCanvas ? 0.22 : 0.7,
+          shapedDarkness * (isMobileFilterCanvas ? 0.46 : 1.65)
         );
         context.lineCap = 'round';
         context.strokeStyle = `rgb(${ink.red}, ${ink.green}, ${ink.blue})`;
@@ -552,7 +558,7 @@ const applyOrderedDither = (context, width, height, ditherColor = NAVY, settings
 
       if (shouldFillHeavyShadow) {
         context.globalAlpha = Math.min(0.52, (shapedDarkness - 0.62) * 1.35);
-        const shadowBlockSize = isMobileFilterCanvas ? 0.52 : 0.96;
+        const shadowBlockSize = isMobileFilterCanvas ? 0.38 : 0.96;
 
         context.fillRect(
           x - dotSpacing * (shadowBlockSize / 2),
@@ -567,13 +573,19 @@ const applyOrderedDither = (context, width, height, ditherColor = NAVY, settings
   context.restore();
 
   context.save();
-  context.globalAlpha = 0.045;
+  context.globalAlpha = isMobileFilterCanvas ? 0.025 : 0.045;
   context.globalCompositeOperation = 'multiply';
   context.fillStyle = `rgb(${ink.red}, ${ink.green}, ${ink.blue})`;
   context.fillRect(0, 0, width, height);
   context.restore();
 
-  addVignette(context, width, height, 'rgba(5,16,45,0.032)', 0.96);
+  addVignette(
+    context,
+    width,
+    height,
+    isMobileFilterCanvas ? 'rgba(5,16,45,0.018)' : 'rgba(5,16,45,0.032)',
+    0.96
+  );
 };
 
 const applyGreenNightFilter = (context, width, height) => {
