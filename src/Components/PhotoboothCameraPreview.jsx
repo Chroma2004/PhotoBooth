@@ -98,8 +98,15 @@ const getIsMobileDevice = () => {
   return window.matchMedia('(max-width: 768px), (hover: none), (pointer: coarse)').matches;
 };
 
-const getPreviewSize = (isMobilePreview = false) => {
+const getPreviewSize = (isMobilePreview = false, filterType = 'classic') => {
   if (isMobilePreview) {
+    if (filterType === 'dither') {
+      return {
+        width: 520,
+        height: 390,
+      };
+    }
+
     return {
       width: 320,
       height: 240,
@@ -119,7 +126,7 @@ const getPreviewFrameInterval = (filterType, isMobilePreview = false) => {
   return expensiveFilters.has(filterType) ? 1000 / 8 : 1000 / 12;
 };
 
-const getIsMobileFilterCanvas = (width, height) => width <= 360 || height <= 260;
+const getIsMobileFilterCanvas = (width, height) => width <= 560 || height <= 420;
 
 const isVideoDrawable = (video) => {
   return Boolean(
@@ -470,9 +477,9 @@ const applyOrderedDither = (context, width, height, ditherColor = NAVY, settings
   if (!sourceContext) return;
 
   const isMobileFilterCanvas = getIsMobileFilterCanvas(width, height);
-  const dotSpacing = settings.dotSpacing || (isMobileFilterCanvas ? 2.85 : 4.4);
-  const maxDotRadius = settings.maxDotRadius || dotSpacing * (isMobileFilterCanvas ? 0.36 : 0.54);
-  const minDotRadius = settings.minDotRadius || (isMobileFilterCanvas ? 0.14 : 0.28);
+  const dotSpacing = settings.dotSpacing || (isMobileFilterCanvas ? 3.35 : 4.4);
+  const maxDotRadius = settings.maxDotRadius || dotSpacing * (isMobileFilterCanvas ? 0.4 : 0.54);
+  const minDotRadius = settings.minDotRadius || (isMobileFilterCanvas ? 0.22 : 0.28);
   const contrastAmount = settings.contrast || (isMobileFilterCanvas ? 1.22 : 1.38);
   const exposureBoost = settings.exposure || (isMobileFilterCanvas ? 16 : 12);
   const whiteCutoff = settings.whiteCutoff || (isMobileFilterCanvas ? 232 : 238);
@@ -519,6 +526,8 @@ const applyOrderedDither = (context, width, height, ditherColor = NAVY, settings
       if (shapedDarkness < detailCutoff) continue;
 
       const radius = Math.max(minDotRadius, shapedDarkness * maxDotRadius);
+      const dotX = isMobileFilterCanvas ? Math.round(x) + 0.5 : x;
+      const dotY = isMobileFilterCanvas ? Math.round(y) + 0.5 : y;
       const alpha = Math.min(
         isMobileFilterCanvas ? 0.92 : 0.96,
         (isMobileFilterCanvas ? 0.2 : 0.2) +
@@ -529,7 +538,7 @@ const applyOrderedDither = (context, width, height, ditherColor = NAVY, settings
 
       context.globalAlpha = alpha;
       context.beginPath();
-      context.arc(x, y, radius, 0, Math.PI * 2);
+      context.arc(dotX, dotY, radius, 0, Math.PI * 2);
       context.fill();
 
       if (shouldConnect) {
@@ -1389,7 +1398,7 @@ const PhotoboothCameraPreview = forwardRef(function PhotoboothCameraPreview(
       return;
     }
 
-    const previewSize = getPreviewSize(isMobilePreview);
+    // const previewSize = getPreviewSize(isMobilePreview);
     let isPreviewLoopActive = true;
 
     const scheduleNextFrame = () => {
@@ -1407,6 +1416,7 @@ const PhotoboothCameraPreview = forwardRef(function PhotoboothCameraPreview(
       if (!video || !canvas || !isCameraOn || !isCameraReady) return;
 
       const activeFilter = latestPreviewSettingsRef.current.selectedFilter;
+      const previewSize = getPreviewSize(isMobilePreview, activeFilter);
       const frameInterval = getPreviewFrameInterval(activeFilter, isMobilePreview);
 
       if (timestamp - lastFrameTimeRef.current >= frameInterval) {
