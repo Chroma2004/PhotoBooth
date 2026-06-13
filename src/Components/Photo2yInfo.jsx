@@ -16,7 +16,7 @@ function Photo2yInfo({ isOpen, onClose }) {
         <button
           type="button"
           onClick={onClose}
-          className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full border-2 border-[#05102D] bg-[#1D56CF] text-xl font-black leading-none text-[#FDF9F2] transition-all duration-200 hover:-translate-y-1 hover:shadow-[3px_4px_0_#05102D] active:translate-y-1 active:shadow-none"
+          className="absolute right-4 top-4 ml-auto flex h-10 w-10 items-center justify-center rounded-full border-2 border-[#05102D] bg-[#1D56CF] text-xl font-black leading-none text-[#FDF9F2] transition-all duration-200 hover:-translate-y-1 hover:shadow-[3px_4px_0_#05102D] active:translate-y-1 active:shadow-none"
           aria-label="Close"
         >
           ×

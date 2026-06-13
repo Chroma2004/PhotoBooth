@@ -520,14 +520,12 @@ const applyOrderedDither = (context, width, height, ditherColor = NAVY, settings
 
       const radius = Math.max(minDotRadius, shapedDarkness * maxDotRadius);
       const alpha = Math.min(
-        isMobileFilterCanvas ? 0.82 : 0.96,
-        (isMobileFilterCanvas ? 0.14 : 0.2) +
-          shapedDarkness * (isMobileFilterCanvas ? 0.74 : 0.9)
+        isMobileFilterCanvas ? 0.92 : 0.96,
+        (isMobileFilterCanvas ? 0.2 : 0.2) +
+          shapedDarkness * (isMobileFilterCanvas ? 0.82 : 0.9)
       );
-      const shouldConnect = isMobileFilterCanvas ? shapedDarkness > 0.68 : shapedDarkness > 0.42;
-      const shouldFillHeavyShadow = isMobileFilterCanvas
-        ? shapedDarkness > 0.86
-        : shapedDarkness > 0.72;
+      const shouldConnect = isMobileFilterCanvas ? false : shapedDarkness > 0.42;
+      const shouldFillHeavyShadow = isMobileFilterCanvas ? false : shapedDarkness > 0.72;
 
       context.globalAlpha = alpha;
       context.beginPath();
@@ -573,7 +571,7 @@ const applyOrderedDither = (context, width, height, ditherColor = NAVY, settings
   context.restore();
 
   context.save();
-  context.globalAlpha = isMobileFilterCanvas ? 0.025 : 0.045;
+  context.globalAlpha = isMobileFilterCanvas ? 0.038 : 0.045;
   context.globalCompositeOperation = 'multiply';
   context.fillStyle = `rgb(${ink.red}, ${ink.green}, ${ink.blue})`;
   context.fillRect(0, 0, width, height);
