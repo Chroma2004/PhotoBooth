@@ -10,6 +10,16 @@ import downloadedSticker7 from '../assets/Sticker7.png';
 import downloadedSticker8 from '../assets/Sticker8.png';
 import downloadedSticker9 from '../assets/Sticker9.png';
 
+import cameraIcon from '../assets/Camera.png';
+import editIcon from '../assets/Edit.png';
+import filterIcon from '../assets/Filter.png';
+import fishEyeIcon from '../assets/FishEye.png';
+import pictureShineIcon from '../assets/PictureShine.png';
+import polaroidIcon from '../assets/Polaroid.png';
+import scissorsIcon from '../assets/Scissor.png';
+import stripDesignIcon from '../assets/StripDesign.png';
+import trashIcon from '../assets/Trash.png';
+
 function ArrowHeadIcon({ isOpen = false }) {
   return (
     <svg
@@ -33,15 +43,72 @@ function ArrowHeadIcon({ isOpen = false }) {
 }
 
 const downloadedStickerOptions = [
-  { id: 'downloaded-sticker-1', label: 'Sticker 1', src: downloadedSticker1 },
-  { id: 'downloaded-sticker-2', label: 'Sticker 2', src: downloadedSticker2 },
-  { id: 'downloaded-sticker-3', label: 'Sticker 3', src: downloadedSticker3 },
-  { id: 'downloaded-sticker-4', label: 'Sticker 4', src: downloadedSticker4 },
-  { id: 'downloaded-sticker-5', label: 'Sticker 5', src: downloadedSticker5 },
-  { id: 'downloaded-sticker-6', label: 'Sticker 6', src: downloadedSticker6 },
-  { id: 'downloaded-sticker-7', label: 'Sticker 7', src: downloadedSticker7 },
-  { id: 'downloaded-sticker-8', label: 'Sticker 8', src: downloadedSticker8 },
-  { id: 'downloaded-sticker-9', label: 'Sticker 9', src: downloadedSticker9 },
+  {
+    id: 'downloaded-sticker-1',
+    label: 'Sticker 1',
+    src: downloadedSticker1,
+    hasWhiteBorder: true,
+  },
+  {
+    id: 'downloaded-sticker-2',
+    label: 'Sticker 2',
+    src: downloadedSticker2,
+    hasWhiteBorder: true,
+  },
+  {
+    id: 'downloaded-sticker-3',
+    label: 'Sticker 3',
+    src: downloadedSticker3,
+    hasWhiteBorder: true,
+  },
+  {
+    id: 'downloaded-sticker-4',
+    label: 'Sticker 4',
+    src: downloadedSticker4,
+    hasWhiteBorder: true,
+  },
+  {
+    id: 'downloaded-sticker-5',
+    label: 'Sticker 5',
+    src: downloadedSticker5,
+    hasWhiteBorder: true,
+  },
+  {
+    id: 'downloaded-sticker-6',
+    label: 'Sticker 6',
+    src: downloadedSticker6,
+    hasWhiteBorder: true,
+  },
+  {
+    id: 'downloaded-sticker-7',
+    label: 'Sticker 7',
+    src: downloadedSticker7,
+    hasWhiteBorder: true,
+  },
+  {
+    id: 'downloaded-sticker-8',
+    label: 'Sticker 8',
+    src: downloadedSticker8,
+    hasWhiteBorder: true,
+  },
+  {
+    id: 'downloaded-sticker-9',
+    label: 'Sticker 9',
+    src: downloadedSticker9,
+    hasWhiteBorder: true,
+  },
+];
+
+const appIconStickerOptions = [
+  { id: 'app-icon-camera', label: 'Camera Icon', src: cameraIcon },
+  { id: 'app-icon-edit', label: 'Edit Icon', src: editIcon },
+  { id: 'app-icon-filter', label: 'Filter Icon', src: filterIcon },
+  { id: 'app-icon-fish-eye', label: 'Fish Eye Icon', src: fishEyeIcon },
+  { id: 'app-icon-picture-shine', label: 'Picture Shine Icon', src: pictureShineIcon },
+  { id: 'app-icon-polaroid', label: 'Polaroid Icon', src: polaroidIcon },
+  { id: 'app-icon-scissors', label: 'Scissors Icon', src: scissorsIcon },
+  { id: 'app-icon-strip-design', label: 'Strip Design Icon', src: stripDesignIcon },
+  { id: 'app-icon-trash', label: 'Trash Icon', src: trashIcon },
 ];
 
 function StickerButton({ sticker, onClick }) {
@@ -58,7 +125,11 @@ function StickerButton({ sticker, onClick }) {
         src={sticker.src}
         alt=""
         aria-hidden="true"
-        className="relative z-10 h-full w-full object-contain transition-transform duration-150 active:scale-110 md:group-hover:scale-110"
+        className={`relative z-10 h-full w-full object-contain transition-transform duration-150 active:scale-110 md:group-hover:scale-110 ${
+          sticker.hasWhiteBorder
+            ? '[filter:drop-shadow(0_1px_0_#FFFFFF)_drop-shadow(1px_0_0_#FFFFFF)_drop-shadow(0_-1px_0_#FFFFFF)_drop-shadow(-1px_0_0_#FFFFFF)_drop-shadow(0_2px_1px_rgba(5,16,45,0.22))]'
+            : ''
+        }`}
         loading="lazy"
         decoding="async"
         draggable={false}
@@ -157,6 +228,65 @@ function FontOptionButton({ font, isSelected, onClick }) {
   );
 }
 
+const fontColorOptions = [
+  { id: 'black', label: 'Black', value: '#05102D' },
+  { id: 'white', label: 'White', value: '#FDF9F2' },
+  { id: 'blue', label: 'Blue', value: '#1D56CF' },
+  { id: 'red', label: 'Red', value: '#E53935' },
+  { id: 'dark-green', label: 'Dark Green', value: '#0B4F2A' },
+];
+
+const fontSizeOptions = [
+  { id: 'xs', label: 'XS', value: 'xs' },
+  { id: 'sm', label: 'S', value: 'sm' },
+  { id: 'md', label: 'M', value: 'md' },
+  { id: 'lg', label: 'L', value: 'lg' },
+  { id: 'xl', label: 'XL', value: 'xl' },
+];
+
+function FontColorButton({ color, isSelected, onClick }) {
+  return (
+    <button
+      type="button"
+      onPointerDown={(event) => event.stopPropagation()}
+      onTouchStart={(event) => event.stopPropagation()}
+      onClick={(event) => {
+        event.stopPropagation();
+        onClick?.();
+      }}
+      aria-label={`Use ${color.label} font color`}
+      className={`h-8 w-8 rounded-full border-2 border-[#05102D] transition-[transform,box-shadow] duration-150 ease-out active:translate-y-1 active:scale-95 sm:h-9 sm:w-9 md:hover:-translate-y-1 md:hover:scale-110 ${
+        isSelected
+          ? 'scale-110 border-[#1D56CF] shadow-[0_0_0_3px_#FDF9F2,0_0_0_6px_#1D56CF]'
+          : ''
+      }`}
+      style={{ backgroundColor: color.value }}
+    />
+  );
+}
+
+function FontSizeButton({ size, isSelected, onClick }) {
+  return (
+    <button
+      type="button"
+      onPointerDown={(event) => event.stopPropagation()}
+      onTouchStart={(event) => event.stopPropagation()}
+      onClick={(event) => {
+        event.stopPropagation();
+        onClick?.();
+      }}
+      aria-label={`Use ${size.label} font size`}
+      className={`rounded-full border-2 border-[#05102D] px-2 py-1.5 text-xs font-black uppercase tracking-wide transition-[transform,background-color,color] duration-150 active:translate-y-1 active:scale-95 sm:px-3 sm:py-2 sm:text-sm md:hover:-translate-y-1 ${
+        isSelected
+          ? 'scale-105 border-[#1D56CF] bg-[#1D56CF] text-[#FDF9F2] shadow-[0_0_0_3px_#FDF9F2,0_0_0_6px_#1D56CF]'
+          : 'bg-[#FDF9F2] text-[#05102D] md:hover:bg-white'
+      }`}
+    >
+      {size.label}
+    </button>
+  );
+}
+
 function SectionCard({ title, children }) {
   return (
     <div className="mb-3 border-b-2 border-dashed border-[#05102D]/25 bg-[#FDF9F2] px-0.5 pb-3.5 last:mb-0 last:border-b-0 last:pb-1 sm:mb-4 sm:px-1 sm:pb-4">
@@ -179,6 +309,8 @@ function StripCustomization({
   onSelectStripColor,
   onSelectStripDesign,
   onSelectStripFont,
+  onSelectStripFontColor,
+  onSelectStripFontSize,
   onAddSticker,
   onClearStickers,
   onClose,
@@ -188,21 +320,42 @@ function StripCustomization({
   const [isDrawerOpen, setIsDrawerOpen] = useState(true);
   const [dragStartY, setDragStartY] = useState(null);
   const [dragCurrentY, setDragCurrentY] = useState(null);
+  const [selectedFontColorValue, setSelectedFontColorValue] = useState(
+    selectedStripTheme?.stripFontColor || '#05102D'
+  );
+  const [selectedFontSizeValue, setSelectedFontSizeValue] = useState(
+    selectedStripTheme?.stripFontSize || 'md'
+  );
 
   const mergedStickerOptions = useMemo(() => {
     const seenStickerKeys = new Set();
 
-    return [...stickerOptions, ...downloadedStickerOptions].filter((sticker) => {
-      const stickerKey = String(sticker.src || sticker.id || sticker.label).toLowerCase();
+    return [...stickerOptions, ...downloadedStickerOptions, ...appIconStickerOptions].filter(
+      (sticker) => {
+        const stickerKey = String(sticker.src || sticker.id || sticker.label).toLowerCase();
 
-      if (seenStickerKeys.has(stickerKey)) return false;
+        if (seenStickerKeys.has(stickerKey)) return false;
 
-      seenStickerKeys.add(stickerKey);
-      return true;
-    });
+        seenStickerKeys.add(stickerKey);
+        return true;
+      }
+    );
   }, [stickerOptions]);
 
   if (!selectedStripTheme) return null;
+
+  const activeFontColorValue = selectedStripTheme.stripFontColor || selectedFontColorValue;
+  const activeFontSizeValue = selectedStripTheme.stripFontSize || selectedFontSizeValue;
+
+  const handleSelectFontColor = (color) => {
+    setSelectedFontColorValue(color.value);
+    onSelectStripFontColor?.(color);
+  };
+
+  const handleSelectFontSize = (size) => {
+    setSelectedFontSizeValue(size.value);
+    onSelectStripFontSize?.(size);
+  };
 
   const handleToggleDrawer = () => {
     setIsDrawerOpen((current) => !current);
@@ -311,7 +464,11 @@ function StripCustomization({
         className={`
           min-h-0 flex-1 touch-pan-y overflow-y-auto overflow-x-hidden overscroll-contain rounded-b-[22px] pr-1 transition-[opacity,max-height,padding] duration-200 [-webkit-overflow-scrolling:touch]
           sm:pr-0 lg:max-h-none lg:overflow-y-auto lg:rounded-b-none lg:opacity-100
-          ${isDrawerOpen ? 'pb-8 opacity-100 sm:pb-4' : 'pointer-events-none max-h-0 pb-0 opacity-0 lg:pointer-events-auto'}
+          ${
+            isDrawerOpen
+              ? 'pb-8 opacity-100 sm:pb-4'
+              : 'pointer-events-none max-h-0 pb-0 opacity-0 lg:pointer-events-auto'
+          }
         `}
       >
         <SectionCard title="Strip colors">
@@ -368,6 +525,40 @@ function StripCustomization({
                 onClick={() => onSelectStripFont?.(font)}
               />
             ))}
+          </div>
+
+          <div className="mt-3 sm:mt-3.5">
+            <p className="mb-2 px-1 text-[8px] font-black uppercase tracking-[0.14em] text-[#1D56CF] sm:text-[9px] sm:tracking-[0.16em]">
+              Font color
+            </p>
+
+            <div className="grid grid-cols-5 gap-2 px-1 sm:gap-2.5">
+              {fontColorOptions.map((color) => (
+                <FontColorButton
+                  key={color.id}
+                  color={color}
+                  isSelected={activeFontColorValue.toUpperCase() === color.value.toUpperCase()}
+                  onClick={() => handleSelectFontColor(color)}
+                />
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-3 sm:mt-3.5">
+            <p className="mb-2 px-1 text-[8px] font-black uppercase tracking-[0.14em] text-[#1D56CF] sm:text-[9px] sm:tracking-[0.16em]">
+              Font size
+            </p>
+
+            <div className="grid grid-cols-5 gap-1.5 px-1 sm:gap-2">
+              {fontSizeOptions.map((size) => (
+                <FontSizeButton
+                  key={size.id}
+                  size={size}
+                  isSelected={activeFontSizeValue === size.value}
+                  onClick={() => handleSelectFontSize(size)}
+                />
+              ))}
+            </div>
           </div>
         </SectionCard>
 

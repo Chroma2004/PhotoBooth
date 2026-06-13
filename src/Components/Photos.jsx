@@ -112,6 +112,16 @@ const editFontOptions = [
   },
 ];
 
+const stripFontSizeMap = {
+  xs: 0.72,
+  sm: 0.86,
+  md: 1,
+  lg: 1.16,
+  xl: 1.34,
+};
+
+const getStripFontScale = (fontSize = 'md') => stripFontSizeMap[fontSize] || stripFontSizeMap.md;
+
 const normalizeHex = (hexColor = CREAM) => {
   if (typeof hexColor !== 'string') return CREAM;
 
@@ -215,6 +225,7 @@ const normalizeSavedStickers = (stickers) => {
         `saved-sticker-${index}-${sticker.label || 'sticker'}-${String(sticker.src).slice(-24)}`,
       label: sticker.label || 'Sticker',
       src: sticker.src,
+      hasWhiteBorder: Boolean(sticker.hasWhiteBorder),
       x: Number.isFinite(Number(sticker.x)) ? Number(sticker.x) : 50,
       y: Number.isFinite(Number(sticker.y)) ? Number(sticker.y) : 50,
       rotation: Number.isFinite(Number(sticker.rotation)) ? Number(sticker.rotation) : 0,
@@ -250,11 +261,31 @@ const getStripTheme = (photo) => {
     photo?.stripDesign?.selectedStripFont ||
     editFontOptions[0].family;
 
+  const stripFontColor =
+    photo?.stripFontColor ||
+    photo?.selectedStripFontColor ||
+    photo?.design?.stripFontColor ||
+    photo?.design?.selectedStripFontColor ||
+    photo?.stripDesign?.stripFontColor ||
+    photo?.stripDesign?.selectedStripFontColor ||
+    '';
+
+  const stripFontSize =
+    photo?.stripFontSize ||
+    photo?.selectedStripFontSize ||
+    photo?.design?.stripFontSize ||
+    photo?.design?.selectedStripFontSize ||
+    photo?.stripDesign?.stripFontSize ||
+    photo?.stripDesign?.selectedStripFontSize ||
+    'md';
+
   return {
     stripColor,
     stripImage,
-    contrastColor: stripImage ? CREAM : getContrastColor(stripColor),
+    contrastColor: stripFontColor || (stripImage ? CREAM : getContrastColor(stripColor)),
     stripFont,
+    stripFontColor,
+    stripFontSize,
   };
 };
 
@@ -268,6 +299,8 @@ const applyPhotoThemeOverride = (photo, themeOverride = {}) => {
     selectedStripImage:
       themeOverride.stripImage !== undefined ? themeOverride.stripImage : photo.selectedStripImage,
     selectedStripFont: themeOverride.stripFont || photo.selectedStripFont,
+    selectedStripFontColor: themeOverride.stripFontColor || photo.selectedStripFontColor,
+    selectedStripFontSize: themeOverride.stripFontSize || photo.selectedStripFontSize,
     design: {
       ...(photo.design || {}),
       stripColor: themeOverride.stripColor || photo.design?.stripColor,
@@ -280,6 +313,11 @@ const applyPhotoThemeOverride = (photo, themeOverride = {}) => {
           : photo.design?.selectedStripImage,
       stripFont: themeOverride.stripFont || photo.design?.stripFont,
       selectedStripFont: themeOverride.stripFont || photo.design?.selectedStripFont,
+      stripFontColor: themeOverride.stripFontColor || photo.design?.stripFontColor,
+      selectedStripFontColor:
+        themeOverride.stripFontColor || photo.design?.selectedStripFontColor,
+      stripFontSize: themeOverride.stripFontSize || photo.design?.stripFontSize,
+      selectedStripFontSize: themeOverride.stripFontSize || photo.design?.selectedStripFontSize,
     },
     stripDesign: {
       ...(photo.stripDesign || {}),
@@ -295,6 +333,12 @@ const applyPhotoThemeOverride = (photo, themeOverride = {}) => {
           : photo.stripDesign?.selectedStripImage,
       stripFont: themeOverride.stripFont || photo.stripDesign?.stripFont,
       selectedStripFont: themeOverride.stripFont || photo.stripDesign?.selectedStripFont,
+      stripFontColor: themeOverride.stripFontColor || photo.stripDesign?.stripFontColor,
+      selectedStripFontColor:
+        themeOverride.stripFontColor || photo.stripDesign?.selectedStripFontColor,
+      stripFontSize: themeOverride.stripFontSize || photo.stripDesign?.stripFontSize,
+      selectedStripFontSize:
+        themeOverride.stripFontSize || photo.stripDesign?.selectedStripFontSize,
     },
   };
 };
@@ -503,6 +547,35 @@ const isLargeDownloadedSticker = (sticker) => {
   );
 };
 
+const hasStickerWhiteBorder = (sticker) => {
+  const stickerId = String(sticker?.id || '').toLowerCase();
+  const stickerLabel = String(sticker?.label || '').toLowerCase();
+  const stickerSource = String(sticker?.src || '').toLowerCase();
+
+  return (
+    Boolean(sticker?.hasWhiteBorder) ||
+    stickerId.includes('downloaded-sticker-1') ||
+    stickerId.includes('downloaded-sticker-2') ||
+    stickerId.includes('downloaded-sticker-3') ||
+    stickerId.includes('downloaded-sticker-4') ||
+    stickerId.includes('downloaded-sticker-5') ||
+    stickerId.includes('downloaded-sticker-6') ||
+    stickerId.includes('downloaded-sticker-7') ||
+    stickerId.includes('downloaded-sticker-8') ||
+    stickerId.includes('downloaded-sticker-9') ||
+    /^sticker\s[1-9]$/.test(stickerLabel) ||
+    stickerSource.includes('sticker1') ||
+    stickerSource.includes('sticker2') ||
+    stickerSource.includes('sticker3') ||
+    stickerSource.includes('sticker4') ||
+    stickerSource.includes('sticker5') ||
+    stickerSource.includes('sticker6') ||
+    stickerSource.includes('sticker7') ||
+    stickerSource.includes('sticker8') ||
+    stickerSource.includes('sticker9')
+  );
+};
+
 const downloadExactPhotoStrip = async (photo, stickers = []) => {
   const frames = getFrames(photo);
   if (!frames.length) return;
@@ -510,6 +583,7 @@ const downloadExactPhotoStrip = async (photo, stickers = []) => {
   const theme = getStripTheme(photo);
   const photoDateTime = getPhotoDateTime(photo);
   const isFourFrameStrip = frames.length >= 4;
+  const fontScale = getStripFontScale(theme.stripFontSize);
 
   const scale = 3;
   const stripWidth = isFourFrameStrip ? 525 : 630;
@@ -588,7 +662,7 @@ const downloadExactPhotoStrip = async (photo, stickers = []) => {
     x: stripWidth / 2,
     y: paddingTop + logoHeight / 2 - 2,
     color: theme.contrastColor,
-    font: `900 ${isFourFrameStrip ? 48 : 64}px ${theme.stripFont}`,
+    font: `900 ${(isFourFrameStrip ? 48 : 64) * fontScale}px ${theme.stripFont}`,
   });
 
   let currentY = paddingTop + logoHeight + logoMarginBottom;
@@ -630,7 +704,7 @@ const downloadExactPhotoStrip = async (photo, stickers = []) => {
       x: stripWidth / 2,
       y: currentY + dateHeight / 2,
       color: theme.contrastColor,
-      font: `900 ${isFourFrameStrip ? 18 : 22}px ${theme.stripFont}`,
+      font: `900 ${(isFourFrameStrip ? 18 : 22) * fontScale}px ${theme.stripFont}`,
     });
   }
 
@@ -651,6 +725,26 @@ const downloadExactPhotoStrip = async (photo, stickers = []) => {
       context.save();
       context.translate(stickerX, stickerY);
       context.rotate(((sticker.rotation || 0) * Math.PI) / 180);
+
+      if (hasStickerWhiteBorder(sticker)) {
+        context.save();
+        context.shadowColor = '#FFFFFF';
+        context.shadowBlur = 0;
+        context.shadowOffsetX = 0;
+        context.shadowOffsetY = -4;
+        drawContainImage(context, stickerImage, 0, 0, stickerSize, stickerSize);
+        context.shadowOffsetX = 4;
+        context.shadowOffsetY = 0;
+        drawContainImage(context, stickerImage, 0, 0, stickerSize, stickerSize);
+        context.shadowOffsetX = 0;
+        context.shadowOffsetY = 4;
+        drawContainImage(context, stickerImage, 0, 0, stickerSize, stickerSize);
+        context.shadowOffsetX = -4;
+        context.shadowOffsetY = 0;
+        drawContainImage(context, stickerImage, 0, 0, stickerSize, stickerSize);
+        context.restore();
+      }
+
       drawContainImage(context, stickerImage, 0, 0, stickerSize, stickerSize);
       context.restore();
     } catch (error) {
@@ -673,6 +767,7 @@ const CleanPhotoStrip = memo(function CleanPhotoStrip({
   const photoDateTime = getPhotoDateTime(photo);
   const frameCount = frames.length;
   const isFourFrameStrip = frameCount >= 4;
+  const fontScale = getStripFontScale(theme.stripFontSize);
 
   const stripSizeClass = isLarge
     ? isFourFrameStrip
@@ -682,13 +777,13 @@ const CleanPhotoStrip = memo(function CleanPhotoStrip({
       ? 'w-full max-w-[175px] rounded-[16px] px-2.5 pb-3.5 pt-5 shadow-[3px_4px_0_#05102D]'
       : 'w-full max-w-[210px] rounded-[18px] px-3.5 pb-4 pt-6 shadow-[3px_4px_0_#05102D]';
 
-  const logoTextClass = isLarge
+  const logoTextSize = isLarge
     ? isFourFrameStrip
-      ? 'text-lg'
-      : 'text-2xl'
+      ? 18
+      : 24
     : isFourFrameStrip
-      ? 'text-base'
-      : 'text-xl';
+      ? 16
+      : 20;
 
   const frameWrapperClass = isFourFrameStrip
     ? isLarge
@@ -745,8 +840,12 @@ const CleanPhotoStrip = memo(function CleanPhotoStrip({
       <div className="relative z-10">
         <div className={`${isFourFrameStrip ? 'mb-3' : 'mb-4.5'} text-center`}>
           <p
-            className={`font-black leading-none drop-shadow ${logoTextClass}`}
-            style={{ color: theme.contrastColor, fontFamily: theme.stripFont }}
+            className="font-black leading-none drop-shadow"
+            style={{
+              color: theme.contrastColor,
+              fontFamily: theme.stripFont,
+              fontSize: `${logoTextSize * fontScale}px`,
+            }}
           >
             Photo2y
           </p>
@@ -770,19 +869,20 @@ const CleanPhotoStrip = memo(function CleanPhotoStrip({
         {photoDateTime && (
           <div className={`${isFourFrameStrip ? 'mt-2.5' : 'mt-3.5'} text-center`}>
             <p
-              className={`
-                font-black uppercase leading-none tracking-wide drop-shadow
-                ${
-                  isLarge
+              className="font-black uppercase leading-none tracking-wide drop-shadow"
+              style={{
+                color: theme.contrastColor,
+                fontFamily: theme.stripFont,
+                fontSize: `${
+                  (isLarge
                     ? isFourFrameStrip
-                      ? 'text-[7px]'
-                      : 'text-[8px]'
+                      ? 7
+                      : 8
                     : isFourFrameStrip
-                      ? 'text-[5.5px]'
-                      : 'text-[6.5px]'
-                }
-              `}
-              style={{ color: theme.contrastColor, fontFamily: theme.stripFont }}
+                      ? 5.5
+                      : 6.5) * fontScale
+                }px`,
+              }}
             >
               {photoDateTime}
             </p>
@@ -820,7 +920,11 @@ const CleanPhotoStrip = memo(function CleanPhotoStrip({
           <img
             src={sticker.src}
             alt={sticker.label || 'Sticker'}
-            className="pointer-events-none h-full w-full object-contain drop-shadow"
+            className={`pointer-events-none h-full w-full object-contain drop-shadow ${
+              hasStickerWhiteBorder(sticker)
+                ? '[filter:drop-shadow(0_1px_0_#FFFFFF)_drop-shadow(1px_0_0_#FFFFFF)_drop-shadow(0_-1px_0_#FFFFFF)_drop-shadow(-1px_0_0_#FFFFFF)_drop-shadow(0_2px_1px_rgba(5,16,45,0.22))]'
+                : ''
+            }`}
             loading="lazy"
             decoding="async"
             draggable={false}
@@ -1041,6 +1145,7 @@ function Photos({
       id: `${Date.now()}-${Math.random()}`,
       label: sticker.label,
       src: sticker.src,
+      hasWhiteBorder: Boolean(sticker.hasWhiteBorder),
       x: 50,
       y: 50,
       rotation: Math.random() > 0.5 ? -8 : 8,
@@ -1110,6 +1215,30 @@ function Photos({
       [selectedPhoto.id]: {
         ...(current[selectedPhoto.id] || {}),
         stripFont: font.family,
+      },
+    }));
+  };
+
+  const handleSelectStripFontColor = (color) => {
+    if (!selectedPhoto) return;
+
+    setPhotoThemeOverrides((current) => ({
+      ...current,
+      [selectedPhoto.id]: {
+        ...(current[selectedPhoto.id] || {}),
+        stripFontColor: color.value,
+      },
+    }));
+  };
+
+  const handleSelectStripFontSize = (size) => {
+    if (!selectedPhoto) return;
+
+    setPhotoThemeOverrides((current) => ({
+      ...current,
+      [selectedPhoto.id]: {
+        ...(current[selectedPhoto.id] || {}),
+        stripFontSize: size.value,
       },
     }));
   };
@@ -1467,6 +1596,8 @@ function Photos({
                 onSelectStripColor={handleSelectStripColor}
                 onSelectStripDesign={handleSelectStripDesign}
                 onSelectStripFont={handleSelectStripFont}
+                onSelectStripFontColor={handleSelectStripFontColor}
+                onSelectStripFontSize={handleSelectStripFontSize}
                 onAddSticker={handleAddSticker}
                 onClearStickers={handleClearStickers}
                 onClose={handleClosePreview}
